@@ -13,7 +13,7 @@ def status():
     return 'RS2-Web-Bot up and running'
 
 
-@app.route('/integrations', methods=['POST'])
+@app.route('/interactions', methods=['POST'])
 @verify_key_decorator(CLIENT_PUBLIC_KEY)
 def handle_command():
     if request.json['type'] == 2:
