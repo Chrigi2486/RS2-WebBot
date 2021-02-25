@@ -1,9 +1,11 @@
 import os
+import sys
 from flask import Flask, request, jsonify
 from discord_interactions import verify_key_decorator
 
-CLIENT_PUBLIC_KEY = os.getenv('CLIENT_PUBLIC_KEY')
+sys.path.insert(0, os.path.dirname(__file__))
 
+CLIENT_PUBLIC_KEY = os.getenv('CLIENT_PUBLIC_KEY')
 
 app = Flask(__name__)
 
