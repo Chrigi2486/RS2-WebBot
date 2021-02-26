@@ -7,6 +7,8 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 CLIENT_PUBLIC_KEY = os.getenv('CLIENT_PUBLIC_KEY')
 
+BOT_TOKEN = os.getenv('BOT_TOKEN')
+
 app = Flask(__name__)
 
 
@@ -15,11 +17,10 @@ def status():
     return 'RS2-Web-Bot up and running'
 
 
-@app.route('/interactions', methods=['POST'])
+@app.route('/', methods=['POST'])
 @verify_key_decorator(CLIENT_PUBLIC_KEY)
 def handle_command():
     if request.json['type'] == 2:
-        print(dict(request.json))
         return jsonify({'type': 4, 'data': {'content': 'Hi'}})
 
 
