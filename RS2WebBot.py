@@ -71,7 +71,7 @@ class RS2WebBot(Flask):
             return commands[command](commands, **data)
         except Exception as e:
             print(traceback.format_exc())
-            return {'type': 4, data: {'content': f'An Error occured! Please contact a member of the -[FGC]- Team and provide the error message below :)\n**Command:** {command}\n**Error:** {e}'}}
+            return Response(f'An Error occured! Please contact a member of the -[FGC]- Team and provide the error message below :)\n**Command:** {command}\n**Error:** {e}')
 
     def update_commands(self, basic=True, premium=True, admin=True):
         if basic:
