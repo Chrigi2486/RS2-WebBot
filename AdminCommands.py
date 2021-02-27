@@ -24,7 +24,7 @@ class AdminCommands(Commands):
     def stats(self, **kwargs):
         """displays the current bot status (connected, validated, premium guilds)"""
         embed = Embed(title='Active Servers', color=0xD84800)
-        guilds = requests.get(f'{BASE_URL}/users/@me/guilds', headers=self.client.HEADER)
+        guilds = requests.get(f'{BASE_URL}/users/@me/guilds', headers=self.client.HEADER).json
         [embed.add_field(name=guild['name'], value=f"ID: {guild['id']}\nValidated: {'False' if guild['id'] not in self.client.active_guilds.keys() else str(self.client.active_guilds[guild['id']]['validated'])}\nPremium: {'False' if guild['id'] not in self.client.active_guilds.keys() else str(self.client.active_guilds[guild['id']]['premium'])}") for guild in guilds]
         return Response(embed=embed)
 
