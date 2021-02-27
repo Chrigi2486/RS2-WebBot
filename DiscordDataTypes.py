@@ -62,9 +62,9 @@ class GuildCommand(dict):
 
 class Response:
 
-    def __init__(self, content: str = None, embed: Embed = None, embeds: list = [], tts: bool = False, allowed_mentions: [] = [], type: int = 4):
-        self.type = type
+    def __init__(self, content: str = None, embed: Embed = None, embeds: list = [], tts: bool = False, allowed_mentions: [] = [], mtype: int = 4):
+        self.mtype = mtype
         self.data = {'tts': tts, 'content': content, 'embeds': ([embed.to_dict()] if embed else [embed.to_dict() for embed in embeds]), 'allowed_mentions': allowed_mentions}
 
     def to_dict(self):
-        return {'type': type, 'data': self.data}
+        return {'type': self.mtype, 'data': self.data}
