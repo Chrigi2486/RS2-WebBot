@@ -3,6 +3,7 @@ import sys
 import importlib
 import traceback
 from json import load, dump
+from HTTPDiscord import HTTPDiscord
 from DiscordDataTypes import Response
 from flask import Flask, request, jsonify
 from discord_interactions import verify_key_decorator
@@ -22,6 +23,8 @@ class RS2WebBot(Flask):
         self.HEADER = {'Authorization': f'Bot {self.BOT_TOKEN}'}
 
         self.CLIENT_ID = os.getenv('CLIENT_ID')
+
+        self.discord = HTTPDiscord(self.BOT_TOKEN, self.CLIENT_ID)
 
         def check_for_file(path, l=False):
             if not os.path.isfile(path):
