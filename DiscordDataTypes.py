@@ -67,4 +67,4 @@ class Response:
         self.data = {'tts': tts, 'content': content, 'embeds': ([embed.to_dict()] if embed else [embed.to_dict() for embed in embeds]), 'allowed_mentions': allowed_mentions}
 
     def to_dict(self):
-        return {'type': type, 'data': data}
+        return {'type': type, 'data': self.data}
