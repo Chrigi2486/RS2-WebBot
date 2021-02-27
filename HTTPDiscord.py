@@ -23,4 +23,4 @@ class HTTPDiscord:
 
     def send_message(self, channel_ID, message):
         message = message.to_dict()
-        self.request('POST', self.SEND_MESSAGE_URL.format({'channel_ID': channel_ID}))
+        self.request('POST', self.SEND_MESSAGE_URL.format(**{'channel_ID': channel_ID}) json=message)
