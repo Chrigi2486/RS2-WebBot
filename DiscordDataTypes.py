@@ -68,3 +68,11 @@ class Response:
 
     def to_dict(self):
         return {'type': self.mtype, 'data': self.data}
+
+
+class Message:
+    def __init__(self, content: str = None, embed: Embed = None, embeds: list = [], tts: bool = False, allowed_mentions: [] = []):
+        self.data = {'tts': tts, 'content': content, 'embeds': ([embed.to_dict()] if embed else [embed.to_dict() for embed in embeds]), 'allowed_mentions': allowed_mentions}
+
+    def to_dict(self):
+        return self.data
