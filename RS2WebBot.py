@@ -19,7 +19,7 @@ class RS2WebBot(Flask):
 
         self.BOT_TOKEN = os.getenv('BOT_TOKEN')
 
-        self.HEADER = {'Application': f'Bot {self.BOT_TOKEN}'}
+        self.HEADER = {'Authorization': f'Bot {self.BOT_TOKEN}'}
 
         self.CLIENT_ID = os.getenv('CLIENT_ID')
 
@@ -44,14 +44,15 @@ class RS2WebBot(Flask):
     def check_command(self, data):
         command = data['data']['name']
         if command in self.global_commands:
-            return self.check_user(data)
+            return self.check_user(self.global_commands, data)
 
         if command in self.guild_commands:
             if self.active_guilds[data['guild_id']]['premium']:
-                return self.check_user(data)
+                return self.check_user(self.guild_commands, data)
             return Response('Upgrade to Premium to unlock these commands!')
         if command in self.admin_commands:
             return self.check_user(self.admin_commands, data, admin=True)
+        return Response(f'Command {command} not found')
 
     def check_user(self, commands, data, admin=False):
         if admin:
