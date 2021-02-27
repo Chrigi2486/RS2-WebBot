@@ -21,6 +21,8 @@ class RS2WebBot(Flask):
 
         self.HEADER = {'Application': f'Bot {self.BOT_TOKEN}'}
 
+        self.CLIENT_ID = os.getenv('CLIENT_ID')
+
         def check_for_file(path, l=False):
             if not os.path.isfile(path):
                 os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -73,8 +75,9 @@ class RS2WebBot(Flask):
             return Response('This Discord-Server must be validated by -[FGC]- before the bot can be used!')
 
     def run_command(self, commands, data):
+        command = data['data']['name']
         try:
-            return commands[data]['func'](commands, **data)
+            return commands[command](commands, **data)
         except Exception as e:
             print(traceback.format_exc())
             return {'type': 4, data: {'content': f'An Error occured! Please contact a member of the -[FGC]- Team and provide the error message below :)\n**Command:** {command}\n**Error:** {e}'}}
@@ -112,7 +115,7 @@ def status():
 @verify_key_decorator(app.CLIENT_PUBLIC_KEY)
 def handle_command():
     if request.json['type'] == 2:
-        return jsonify((app.check_command()).to_dict())
+        return jsonify((app.check_command(request.json)).to_dict())
 
 
 if __name__ == '__main__':
