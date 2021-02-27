@@ -3,7 +3,7 @@ import requests
 from discord import Embed
 from Commands import Commands
 from Decorators import Decorators
-from DiscordDataTypes import Response, BASE_URL
+from DiscordDataTypes import Response, Message
 
 
 @Decorators.commands
@@ -21,11 +21,12 @@ class AdminCommands(Commands):
         await message.channel.send(client.list_commands(client.basic_commands, client.premium_commands, client.admin_commands))
 
     @Decorators.command()
-    def stats(self, **kwargs):
+    def stats(self, channel_id, **kwargs):
         """displays the current bot status (connected, validated, premium guilds)"""
         embed = Embed(title='Active Servers', color=0xD84800)
-        guilds = requests.get(f'{BASE_URL}/users/@me/guilds', headers=self.client.HEADER).json()
+        guilds = self.client.discord.get_guilds()
         [embed.add_field(name=guild['name'], value=f"ID: {guild['id']}\nValidated: {'False' if guild['id'] not in self.client.active_guilds.keys() else str(self.client.active_guilds[guild['id']]['validated'])}\nPremium: {'False' if guild['id'] not in self.client.active_guilds.keys() else str(self.client.active_guilds[guild['id']]['premium'])}") for guild in guilds]
+        self.client.discord.send_message(channel_id, Message('Here it comes'))
         return Response(embed=embed)
 
     @Decorators.command()
