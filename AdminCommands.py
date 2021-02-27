@@ -21,11 +21,11 @@ class AdminCommands(Commands):
         await message.channel.send(client.list_commands(client.basic_commands, client.premium_commands, client.admin_commands))
 
     @Decorators.command()
-    def stats(self):
+    def stats(self, *args):
         """displays the current bot status (connected, validated, premium guilds)"""
         embed = Embed(title='Active Servers', color=0xD84800)
         guilds = requests.get(f'{BASE_URL}/users/@me/guilds', headers=self.client.HEADER)
-        [embed.add_field(name=guild.name, value=f"Owner: {guild.owner}\nID: {guild.id}\nValidated: {'False' if str(guild.id) not in self.client.active_guilds.keys() else str(self.client.active_guilds[str(guild.id)]['validated'])}\nPremium: {'False' if str(guild.id) not in self.client.active_guilds.keys() else str(self.client.active_guilds[str(guild.id)]['premium'])}") for guild in guilds]
+        [embed.add_field(name=guild['name'], value=f"ID: {guild['id']}\nValidated: {'False' if guild['id'] not in self.client.active_guilds.keys() else str(self.client.active_guilds[guild['id']]['validated'])}\nPremium: {'False' if guild['id'] not in self.client.active_guilds.keys() else str(self.client.active_guilds[guild['id']]['premium'])}") for guild in guilds]
         return Response(embed=embed)
 
     @Decorators.command()
