@@ -21,7 +21,7 @@ class AdminCommands(Commands):
         await message.channel.send(client.list_commands(client.basic_commands, client.premium_commands, client.admin_commands))
 
     @Decorators.command()
-    def stats(self, *args):
+    def stats(self, **kwargs):
         """displays the current bot status (connected, validated, premium guilds)"""
         embed = Embed(title='Active Servers', color=0xD84800)
         guilds = requests.get(f'{BASE_URL}/users/@me/guilds', headers=self.client.HEADER)
