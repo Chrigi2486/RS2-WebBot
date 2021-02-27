@@ -36,7 +36,7 @@ class RS2WebBot(Flask):
         check_for_file('./config.json')
         check_for_file('./data/active_guilds.json')
 
-        self.config = self.load_file('./config.json')
+        self.bot_config = self.load_file('./config.json')
         self.active_guilds = self.load_file('./data/active_guilds.json')
 
         super().__init__(*args, **kwargs)
@@ -46,33 +46,24 @@ class RS2WebBot(Flask):
         if command in self.global_commands:
             return self.check_user(data)
 
-        elif command in self.guild_commands:
-
+        if command in self.guild_commands:
             if self.active_guilds[data['guild_id']]['premium']:
                 return self.check_user(data)
-            else:
-                return Response('Upgrade to Premium to unlock these commands!')
-
-        elif command in self.admin_commands:
-            if data['member']['user']['id'] in self.config['validators']:
-                return self.check_user(self.admin_commands, data, admin=True)
-            else:
-                return Response('You aren\'t authorised to use this command!')
+            return Response('Upgrade to Premium to unlock these commands!')
+        if command in self.admin_commands:
+            return self.check_user(self.admin_commands, data, admin=True)
 
     def check_user(self, commands, data, admin=False):
         if admin:
-            if data['member']['user']['id'] in self.config['validators']:
+            if data['member']['user']['id'] in self.bot_config['validators']:
                 return self.run_command(commands, data)
-            else:
-                return Response('You aren\'t authorised to use this command!')
+            return Response('You aren\'t authorised to use this command!')
 
         if 'guild_id' in self.active_guilds and self.active_guilds['guild_id']['validated']:
             if self.active_guilds[data['guild_id']]['admin'] in data['member']['roles']:
-                return self.run_command(data)
-            else:
-                return Response('You aren\'t authorised to use this command!')
-        else:
-            return Response('This Discord-Server must be validated by -[FGC]- before the bot can be used!')
+                return self.run_command(commands, data)
+            return Response('You aren\'t authorised to use this command!')
+        return Response('This Discord-Server must be validated by -[FGC]- before the bot can be used!')
 
     def run_command(self, commands, data):
         command = data['data']['name']
