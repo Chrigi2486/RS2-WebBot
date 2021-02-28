@@ -31,7 +31,7 @@ class AdminCommands(Commands):
     @Decorators.command()
     def update(self, data, **kwargs):
         """Use with caution. Parameters: basic, premium, admin"""
-        basic, premium, admin = self.client.update_commands(*[option['value'] for option in data['options']])
+        basic, premium, admin = self.client.update_commands(**{option['name']: option['value'] for option in (data['options'] if 'options' in data else [])})
         print(f'Updated:\nBasic:{basic}\nPremium:{premium}\nAdmin:{admin}')
         return Response(f'Updated:\nBasic:{basic}\nPremium:{premium}\nAdmin:{admin}')
 
