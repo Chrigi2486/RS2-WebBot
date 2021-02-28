@@ -34,7 +34,7 @@ class RS2WebBot(Flask):
                 return False
             return True
 
-        self.update_commands()
+        self.update_commands(True, True, True)
 
         check_for_file('./config.json')
         check_for_file('./data/active_guilds.json')
@@ -77,7 +77,7 @@ class RS2WebBot(Flask):
             print(traceback.format_exc())
             return Response(f'An Error occured! Please contact a member of the -[FGC]- Team and provide the error message below :)\n**Command:** {command}\n**Error:** {e}')
 
-    def update_commands(self, basic=True, premium=True, admin=True):
+    def update_commands(self, basic=False, premium=False, admin=False):
         if basic:
             importlib.reload(GlobalCommands)
             self.global_commands = GlobalCommands.GlobalCommands(self)
