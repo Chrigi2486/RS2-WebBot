@@ -21,59 +21,54 @@ class AdminCommands(Commands):
         await message.channel.send(client.list_commands(client.basic_commands, client.premium_commands, client.admin_commands))
 
     @Decorators.command()
-    def stats(self, channel_id, **kwargs):
+    def stats(self, **kwargs):
         """displays the current bot status (connected, validated, premium guilds)"""
         embed = Embed(title='Active Servers', color=0xD84800)
         guilds = self.client.discord.get_guilds()
         [embed.add_field(name=guild['name'], value=f"ID: {guild['id']}\nValidated: {'False' if guild['id'] not in self.client.active_guilds.keys() else str(self.client.active_guilds[guild['id']]['validated'])}\nPremium: {'False' if guild['id'] not in self.client.active_guilds.keys() else str(self.client.active_guilds[guild['id']]['premium'])}") for guild in guilds]
-        self.client.discord.send_message(channel_id, Message('Here it comes'))
         return Response(embed=embed)
 
     @Decorators.command()
-    async def update(self, client, message):
+    def update(self, data, **kwargs):
         """Use with caution. Parameters: basic, premium, admin"""
-        basic, premium, admin = client.update_commands(basic=('basic' in message.content), premium=('premium' in message.content), admin=('admin' in message.content))
-        await message.channel.send(f'Updated:\nBasic:{basic}\nPremium:{premium}\nAdmin:{admin}')
+        basic, premium, admin = self.client.update_commands(*[option['value'] for option in data['options']])
         print(f'Updated:\nBasic:{basic}\nPremium:{premium}\nAdmin:{admin}')
+        return Response(f'Updated:\nBasic:{basic}\nPremium:{premium}\nAdmin:{admin}')
 
     @Decorators.command('Guild_ID', 'Role_ID')
-    async def validate(self, client, message, guild_ID, role_ID):
+    def validate(self, client, message, guild_ID, role_ID):
         """validates the given guild by ID"""
-        if guild_ID not in client.active_guilds.keys():
-            client.active_guilds[guild_ID] = {'admin': role_ID, 'validated': True, 'premium': False, 'servers': []}
+        if guild_ID not in self.client.active_guilds.keys():
+            self.client.active_guilds[guild_ID] = {'admin': role_ID, 'validated': True, 'premium': False, 'servers': []}
             os.makedirs(os.path.dirname(f'./data/{guild_ID}/'), exist_ok=True)
         else:
-            if client.active_guilds[guild_ID]['validated']:
-                await message.channel.send('Server is already validated')
-                return
-            client.active_guilds[guild_ID]['validated'] = True
-            client.active_guilds[guild_ID]['admin'] = role_ID
-        client.dump_file('./data/active_guilds.json', client.active_guilds)
-        await message.channel.send(f'{client.get_guild(int(guild_ID)).name} - {guild_ID} has been validated!')
+            if self.client.active_guilds[guild_ID]['validated']:
+                return Response('Server is already validated')
+            self.client.active_guilds[guild_ID]['validated'] = True
+            self.client.active_guilds[guild_ID]['admin'] = role_ID
+        self.client.dump_file('./data/active_guilds.json', self.client.active_guilds)
+        return Response(f'{client.get_guild(int(guild_ID)).name} - {guild_ID} has been validated!')
 
     @Decorators.command('Guild_ID')
-    async def premium(self, client, message, guild_ID):
+    def premium(self, client, message, guild_ID):
         """rewards the given guild premium by ID"""
-        if guild_ID not in client.active_guilds.keys() or not client.active_guilds[guild_ID]['validated']:
-            await message.channel.send('Server must be validated first')
-            return
-        client.active_guilds[guild_ID]['premium'] = True
-        client.dump_file('./data/active_guilds.json', client.active_guilds)
-        await message.channel.send(f'{client.get_guild(int(guild_ID)).name} - {guild_ID} has been awarded with premium!')
+        if guild_ID not in self.client.active_guilds.keys() or not self.client.active_guilds[guild_ID]['validated']:
+            return Response('Server must be validated first')
+        self.client.active_guilds[guild_ID]['premium'] = True
+        self.client.dump_file('./data/active_guilds.json', client.active_guilds)
+        return Response(f'{client.get_guild(int(guild_ID)).name} - {guild_ID} has been awarded with premium!')
 
     @Decorators.command('Guild_ID')
-    async def revoke(self, client, message, guild_ID):
+    def revoke(self, client, message, guild_ID):
         """revokes the given guild by ID"""
-        if guild_ID not in client.active_guilds.keys():
-            await message.channel.send('Server not found')
-            return
-        elif not client.active_guilds[guild_ID]['validated']:
-            await message.channel.send('Server already revoked')
-            return
-        client.active_guilds[guild_ID]['validated'] = False
-        client.active_guilds[guild_ID]['premium'] = False
-        client.dump_file('./data/active_guilds.json', client.active_guilds)
-        await message.channel.send(f'{client.get_guild(int(guild_ID)).name} - {guild_ID} has been revoked!')
+        if guild_ID not in self.client.active_guilds.keys():
+            return Response('Server not found')
+        elif not self.client.active_guilds[guild_ID]['validated']:
+            return Response('Server already revoked')
+        self.client.active_guilds[guild_ID]['validated'] = False
+        self.client.active_guilds[guild_ID]['premium'] = False
+        self.client.dump_file('./data/active_guilds.json', self.client.active_guilds)
+        return Response(f'{client.get_guild(int(guild_ID)).name} - {guild_ID} has been revoked!')
 
     @Decorators.command('File_Path')
     async def download(self, client, message, file_path):
