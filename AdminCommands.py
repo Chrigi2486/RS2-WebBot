@@ -31,9 +31,9 @@ class AdminCommands(Commands):
     @Decorators.command()
     def update(self, data, **kwargs):
         """Use with caution. Parameters: basic, premium, admin"""
-        basic, premium, admin = self.client.update_commands(**{option['name']: option['value'] for option in (data['options'] if 'options' in data else [])})
-        print(f'Updated:\nGlobal:{basic}\nGuild:{premium}\nAdmin:{admin}')
-        return Response(f'Updated:\nGlobal: {basic}\nGuild: {premium}\nAdmin: {admin}')
+        globalc, guildc, adminc = self.client.update_commands(**{option['name']: option['value'] for option in (data['options'] if 'options' in data else [])})
+        print(f'Updated:\nGlobal:{globalc}\nGuild:{guildc}\nAdmin:{adminc}')
+        return Response(f'Updated:\nGlobal: {globalc}\nGuild: {guildc}\nAdmin: {adminc}')
 
     @Decorators.command('Guild_ID', 'Role_ID')
     def validate(self, client, message, guild_ID, role_ID):
