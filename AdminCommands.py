@@ -36,8 +36,10 @@ class AdminCommands(Commands):
         return Response(f'Updated:\nGlobal: {globalc}\nGuild: {guildc}\nAdmin: {adminc}')
 
     @Decorators.command('Guild_ID', 'Role_ID')
-    def validate(self, client, message, guild_ID, role_ID):
+    def validate(self, data, **kwargs):
         """validates the given guild by ID"""
+        guild_ID = data['options'][0]['value']
+        role_ID = data['options'][1]['value']
         if guild_ID not in self.client.active_guilds.keys():
             self.client.active_guilds[guild_ID] = {'admin': role_ID, 'validated': True, 'premium': False, 'servers': []}
             os.makedirs(os.path.dirname(f'./data/{guild_ID}/'), exist_ok=True)
@@ -47,7 +49,7 @@ class AdminCommands(Commands):
             self.client.active_guilds[guild_ID]['validated'] = True
             self.client.active_guilds[guild_ID]['admin'] = role_ID
         self.client.dump_file('./data/active_guilds.json', self.client.active_guilds)
-        return Response(f'{client.get_guild(int(guild_ID)).name} - {guild_ID} has been validated!')
+        return Response(f"{self.client.discord.get_guild(guild_ID)['name']} - {guild_ID} has been validated!")
 
     @Decorators.command('Guild_ID')
     def premium(self, client, message, guild_ID):
@@ -63,7 +65,7 @@ class AdminCommands(Commands):
         """revokes the given guild by ID"""
         if guild_ID not in self.client.active_guilds.keys():
             return Response('Server not found')
-        elif not self.client.active_guilds[guild_ID]['validated']:
+        if not self.client.active_guilds[guild_ID]['validated']:
             return Response('Server already revoked')
         self.client.active_guilds[guild_ID]['validated'] = False
         self.client.active_guilds[guild_ID]['premium'] = False
