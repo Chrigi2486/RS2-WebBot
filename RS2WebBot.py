@@ -7,6 +7,7 @@ from HTTPDiscord import HTTPDiscord
 from DiscordDataTypes import Response
 from flask import Flask, request, jsonify
 from discord_interactions import verify_key_decorator
+import mysql.connector
 import GlobalCommands
 import GuildCommands
 import AdminCommands
@@ -15,14 +16,14 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 
 class RS2WebBot(Flask):
+
+    CLIENT_PUBLIC_KEY = os.getenv('CLIENT_PUBLIC_KEY')
+    BOT_TOKEN = os.getenv('BOT_TOKEN')
+    HEADER = {'Authorization': f'Bot {BOT_TOKEN}'}
+    CLIENT_ID = os.getenv('CLIENT_ID')
+    MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
+
     def __init__(self, *args, **kwargs):
-        self.CLIENT_PUBLIC_KEY = os.getenv('CLIENT_PUBLIC_KEY')
-
-        self.BOT_TOKEN = os.getenv('BOT_TOKEN')
-
-        self.HEADER = {'Authorization': f'Bot {self.BOT_TOKEN}'}
-
-        self.CLIENT_ID = os.getenv('CLIENT_ID')
 
         self.discord = HTTPDiscord(self.BOT_TOKEN, self.CLIENT_ID)
 
@@ -43,6 +44,15 @@ class RS2WebBot(Flask):
         self.active_guilds = self.load_file('./data/active_guilds.json')
 
         super().__init__(*args, **kwargs)
+
+    def run_sql(self, command, *args):
+        database = mysql.connector.connect(user='RS2WebBot', password=self.MYSQL_PASSWORD, host='127.0.0.1', database='RS2Database')
+        cursor = database.cursor()
+        cursor.excecute(command, *args)
+        result = cursor.fetchall()
+        cursor.close()
+        database.close()
+        return result
 
     def check_command(self, data):
         command = data['data']['name']
