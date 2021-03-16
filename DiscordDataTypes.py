@@ -1,5 +1,6 @@
 import requests
 from discord import Embed
+from HTTPDiscord import HTTPDiscord
 
 BASE_URL = 'https://discord.com/api/v8'
 
@@ -30,14 +31,45 @@ class Guild:
                 self.commands.append(GuildCommand.from_dict(guild_command))
 
 
-class GlobalCommand(dict):
+class CommandOptionChoice:
 
-    COMMAND_URL = '/applications/{application_ID}/commands/{command_ID}'
+    def __init__(self, name, value):
+        self.name = name
+        self.value = value
 
-    def __init__(self, name: str = None, description: str = None, options: list = None, ID: int = None):
+    def to_dict(self):
+        return {'name': self.name, 'value': self.value}
+
+
+class SubCommand:
+
+    def __init__(self, name, description):
         self.name = name
         self.description = description
-        self.options = options if options else []
+
+    def to_dict(self):
+        return {'name': self.name, 'description': self.description}
+
+
+class CommandOption:
+
+    def __init__(self, name: str, description: str, otype: int, required: bool = True, choices: [CommandOptionChoice] = []):
+        self.name = name
+        self.description = description
+        self.otype = otype
+        self.required = required
+        self.choices = choices
+
+    def to_dict(self):
+        return {'name': self.name, 'description': self.description, 'otype': self.otype, 'required': self.required, 'choices': [choice.to_dict() for choice in self.choices]}
+
+
+class GlobalCommand:
+
+    def __init__(self, name: str = None, description: str = None, options: [CommandOption, SubCommand] = [], ID: int = None):
+        self.name = name
+        self.description = description
+        self.options = options
         self.ID = ID
 
     @classmethod
@@ -45,10 +77,20 @@ class GlobalCommand(dict):
         with requests.get(cls.COMMAND_URL.format(application_ID, command_ID)) as command_page:
             pass
 
+    @classmethod
+    def from_dict(cls, command_dict):
+        pass
 
-class GuildCommand(dict):
+    def to_dict(self, ID: bool = False):
+        ret = {'name': self.name, 'description': self.description, 'options': [option.to_dict() for option in self.options]}
+        if ID:
+            ret['id'] = self.ID
+        return ret
 
-    def __init__(self, name: str = None, description: str = None, options: list = None, ID: int = None):
+
+class GuildCommand:
+
+    def __init__(self, name: str = None, description: str = None, options: list = [], ID: int = None):
         self.name = name
         self.description = description
         self.options = options
@@ -57,7 +99,12 @@ class GuildCommand(dict):
     @classmethod
     def from_ID(cls, ID):
         pass
-        # with requests.get()
+
+    def to_dict(self, ID: bool = False):
+        ret = {'name': self.name, 'description': self.description, 'options': [option.to_dict() for option in self.options]}
+        if ID:
+            ret['id'] = self.ID
+        return ret
 
 
 class Response:
