@@ -3,6 +3,7 @@ import sys
 import importlib
 import traceback
 from json import load, dump
+from discord import Client
 from HTTPDiscord import HTTPDiscord
 from DiscordDataTypes import Response
 from flask import Flask, request, jsonify
@@ -27,6 +28,10 @@ class RS2WebBot(Flask):
 
         self.discord = HTTPDiscord(self.BOT_TOKEN, self.CLIENT_ID)
 
+        self.client = Client()
+
+        self.run_async(self.client.login(self.BOT_TOKEN))
+
         def check_for_file(path, l=False):
             if not os.path.isfile(path):
                 os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -44,6 +49,12 @@ class RS2WebBot(Flask):
         self.active_guilds = self.load_file('./data/active_guilds.json')
 
         super().__init__(*args, **kwargs)
+
+    def run_async(self, command):
+        return self.client.loop.run_until_complete(command)
+
+    def add_async(self, command):
+        return self.client.loop.create_task(command)
 
     def run_sql(self, command, *args):
         database = mysql.connector.connect(user='RS2WebBot', password=self.MYSQL_PASSWORD, host='127.0.0.1', database='RS2Database')
