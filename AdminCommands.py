@@ -25,7 +25,7 @@ class AdminCommands(Commands):
         """displays the current bot status (connected, validated, premium guilds)"""
         embed = Embed(title='Active Servers', color=0xD84800)
         guilds = self.app.run_async(self.app.client.fetch_guilds().flatten())
-        [embed.add_field(name=guild['name'], value=f"ID: {guild.id}\nValidated: {'False' if str(guild.id) not in self.app.active_guilds.keys() else str(self.app.active_guilds[guild['id']]['validated'])}\nPremium: {'False' if guild['id'] not in self.app.active_guilds.keys() else str(self.app.active_guilds[guild['id']]['premium'])}") for guild in guilds]
+        [embed.add_field(name=guild.name, value=f"ID: {guild.id}\nValidated: {'False' if guild.id not in self.app.active_guilds else str(self.app.active_guilds[guild.id]['validated'])}\nPremium: {'False' if guild.id not in self.app.active_guilds else str(self.app.active_guilds[guild.id]['premium'])}") for guild in guilds]
         return Response(embed=embed)
 
     @Decorators.command()
