@@ -39,6 +39,7 @@ class AdminCommands(Commands):
     def validate(self, data, **kwargs):
         """validates the given guild by ID"""
         guild_ID = data['options'][0]['value']
+        print(guild_ID)
         role_ID = data['options'][1]['value']
         guild = self.app.run_async(self.app.client.fetch_guild(guild_ID))
         if guild_ID not in self.app.active_guilds.keys():
