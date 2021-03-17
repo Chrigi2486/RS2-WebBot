@@ -40,7 +40,7 @@ class AdminCommands(Commands):
         """validates the given guild by ID"""
         guild_ID = data['options'][0]['value']
         role_ID = data['options'][1]['value']
-        guild = self.app.run_async()
+        guild = self.app.run_async(self.app.client.fetch_guild(guild_ID))
         if guild_ID not in self.app.active_guilds.keys():
             self.app.active_guilds[guild_ID] = {'admin': role_ID, 'validated': True, 'premium': False, 'servers': []}
             os.makedirs(os.path.dirname(f'./data/{guild_ID}/'), exist_ok=True)
@@ -50,7 +50,7 @@ class AdminCommands(Commands):
             self.app.active_guilds[guild_ID]['validated'] = True
             self.app.active_guilds[guild_ID]['admin'] = role_ID
         self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
-        return Response(f"{self.app.discord.get_guild(guild_ID)['name']} - {guild_ID} has been validated!")
+        return Response(f"{guild.name} - {guild_ID} has been validated!")
 
     @Decorators.command('Guild_ID')
     def premium(self, app, message, guild_ID):
