@@ -3,7 +3,7 @@ import sys
 import importlib
 import traceback
 from json import load, dump
-from discord import Client
+from discord import Client, Intents
 from HTTPDiscord import HTTPDiscord
 from DiscordDataTypes import Response
 from flask import Flask, request, jsonify
@@ -48,7 +48,7 @@ class RS2WebBot(Flask):
         self.bot_config = self.load_file('./config.json')
         self.active_guilds = self.load_file('./data/active_guilds.json')
 
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, intents=Intents.default() **kwargs)
 
     def run_async(self, command):
         return self.client.loop.run_until_complete(command)
