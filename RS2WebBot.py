@@ -58,7 +58,7 @@ class RS2WebBot(Flask):
     def run_sql(self, command, *args):
         database = mysql.connector.connect(user='RS2WebBot', password=self.MYSQL_PASSWORD, host='127.0.0.1', database='RS2Database')
         cursor = database.cursor()
-        cursor.excecute(command, *args)
+        cursor.execute(command, *args)
         result = cursor.fetchall()
         cursor.close()
         database.close()
