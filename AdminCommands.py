@@ -75,42 +75,42 @@ class AdminCommands(Commands):
         self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
         return Response(f'{self.app.run_async(self.app.client.fetch_guild(guild_ID)).name} - {guild_ID} has been revoked!')
 
-    @Decorators.command('File_Path')
-    async def download(self, app, message, file_path):
-        """sends you the file at the given path"""
-        if not os.path.isfile(file_path):
-            await message.channel.send('File not found!')
-        elif '..' in file_path:
-            await message.channel.send('Fuck you, no')
-        else:
-            await message.channel.send(file=discord.File(file_path))
-            print(f'File was downloaded {file_path}')
+    # @Decorators.command('File_Path')
+    # async def download(self, app, message, file_path):
+    #     """sends you the file at the given path"""
+    #     if not os.path.isfile(file_path):
+    #         await message.channel.send('File not found!')
+    #     elif '..' in file_path:
+    #         await message.channel.send('Fuck you, no')
+    #     else:
+    #         await message.channel.send(file=discord.File(file_path))
+    #         print(f'File was downloaded {file_path}')
 
-    @Decorators.command('File_Path')
-    async def upload(self, app, message, file_path):
-        """saves the given file to the given path"""
-        if not message.attachments:
-            await message.channel.send('Attach the file to be uploaded')
-            return
-        await message.attachments[0].save(file_path)
-        await message.channel.send('File has been uploaded. Use +load to override the current Data')
-        print(f'File was uploaded to {file_path}')
+    # @Decorators.command('File_Path')
+    # async def upload(self, app, message, file_path):
+    #     """saves the given file to the given path"""
+    #     if not message.attachments:
+    #         await message.channel.send('Attach the file to be uploaded')
+    #         return
+    #     await message.attachments[0].save(file_path)
+    #     await message.channel.send('File has been uploaded. Use +load to override the current Data')
+    #     print(f'File was uploaded to {file_path}')
 
     @Decorators.command('File')
-    async def dump(self, data, **kwargs):
+    def dump(self, data, **kwargs):
         """dumps the given file"""
         file = data['options'][0]['value']
         if file == 'active_guilds':
-            self.app.dump_file('./data/active_guilds.json', app.active_guilds)
+            self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
         elif file == 'config':
-            self.app.dump_file('./config.json', app.config)
+            self.app.dump_file('./config.json', self.app.config)
         else:
             return Response('File wasn\'t found')
         print(f'{file} was dumped')
         return Response(f'{file} was dumped')
 
     @Decorators.command('File')
-    async def load(self, data, **kwargs):
+    def load(self, data, **kwargs):
         """loads the given file"""
         file = data['options'][0]['value']
         if file == 'active_guilds':
@@ -122,6 +122,6 @@ class AdminCommands(Commands):
         print(f'{file} was loaded')
         return Response(f'{file} was loaded')
 
-    @Decorators.command
-    def add_command(self, data):
-        pass
+    # @Decorators.command
+    # def add_command(self, data):
+    #     pass
