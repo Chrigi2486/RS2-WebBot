@@ -73,7 +73,7 @@ class AdminCommands(Commands):
         self.app.active_guilds[guild_ID]['validated'] = False
         self.app.active_guilds[guild_ID]['premium'] = False
         self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
-        return Response(f'{self.app.run_async(self.app.fetch_guild(guild_ID)).name} - {guild_ID} has been revoked!')
+        return Response(f'{self.app.run_async(self.app.client.fetch_guild(guild_ID)).name} - {guild_ID} has been revoked!')
 
     @Decorators.command('File_Path')
     async def download(self, app, message, file_path):
