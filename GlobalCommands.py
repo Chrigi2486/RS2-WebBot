@@ -1,4 +1,3 @@
-import os
 import discord
 from Commands import Commands
 from Decorators import Decorators
