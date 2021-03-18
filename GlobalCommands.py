@@ -30,11 +30,11 @@ class GlobalCommands(Commands):
         return Response(embed=embed)
 
     @Decorators.command('Abbreviation', 'BattleMetrics_ID', 'WebAdmin_IP:PORT')
-    async def addserver(self, data, **kwargs):
+    async def addserver(self, guild_id, data, **kwargs):
         """adds a server to your guilds server list"""
         abbr, bmID, waIP, waUsername, waPassword = [option['value'] for option in data['options']]
 
-        if abbr in self.app.active_guilds[str(message.guild.id)]['servers']:
+        if abbr in self.app.active_guilds[guild_id]['servers']:
             return Response('Abbreviation already in use')
 
         def get_webadmin_IP_list():
@@ -60,45 +60,6 @@ class GlobalCommands(Commands):
                 print(webadmin_IP)
                 await message.channel.send('WebAdmin_IP is invalid')
                 return
-
-            def check(m):
-                return(m.author == message.author)
-
-            logindata = {}
-
-            async def check_cancel(m):
-                if m.content.lower() == 'cancel':
-                    await m.channel.send('Process has been cancelled')
-                    return True
-                return False
-
-            await message.channel.send('To cancel the process write "cancel" (30s Timeout)')
-
-            await message.channel.send('Enter WebAdmin username:')
-            try:
-                msg = await app.wait_for('message', check=check, timeout=30)
-            except:
-                await message.channel.send('Process has been cancelled')
-                return
-
-            if await check_cancel(msg):
-                return
-
-            logindata['username'] = msg.content
-
-            await message.channel.send('Enter WebAdmin password: (The password will be hashed)')
-            try:
-                msg = await app.wait_for('message', check=check, timeout=30)
-            except:
-                await message.channel.send('Process has been cancelled')
-                return
-
-            if await check_cancel(msg):
-                return
-
-            logindata['password'] = msg.content
-
-            await message.channel.send('Make sure to delete any messages containing sensitive data (passwords)')
 
             try:
                 await webadmin.login(logindata)
