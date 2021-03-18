@@ -121,6 +121,6 @@ class AdminCommands(Commands):
         print(f'{file} was loaded')
         return Response(f'{file} was loaded')
 
-    @Decorators.command
+    @Decorators.command()
     def test(self, data, **kwargs):
         self.app.run_sql('show tables;')
