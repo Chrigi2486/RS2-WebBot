@@ -2,7 +2,7 @@ import os
 import discord
 from Commands import Commands
 from Decorators import Decorators
-from DirscordDataTypes import Response
+from DiscordDataTypes import Response
 from WebAdmin import WebAdminSession, IncorrectLogindata, ServerOffline
 from BattleMetrics import BattleMetricsSession
 
