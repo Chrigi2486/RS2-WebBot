@@ -17,66 +17,61 @@ class GlobalCommands(Commands):
         return 'Basic Commands'
 
     @Decorators.command()
-    async def servers(self, app, message):
+    async def servers(self, guild_id, **kwargs):
         """lists the servers in your guilds server list"""
-        if not app.active_guilds[str(message.guild.id)]['servers']:
+        if not self.app.active_guilds[guild_id]['servers']:
             return Response('Your server list is empty')
 
         embed = discord.Embed(title='Server List')
-        for server in app.active_guilds[str(message.guild.id)]['servers']:
-            server_config = app.load_file(f'./data/{str(message.guild.id)}/{server}/config.json')
-            value = f"Abbreviation: {server}\nIP: {server_config['server_IP']}\nWebAdmin IP: {server_config['webadmin_IP']}\nBattleMetrics ID: {server_config['battlemetrics_ID']}"
-            embed.add_field(name=server_config['server_name'], value=value)
+        for server in self.app.active_guilds[guild_id]['servers']:
+            serverid = self.app.active_guilds[guild_id]['servers'][server]
+            server_name, server_IP, bmID, waIP = self.app.run_sql(f'SELECT SERVERS.Name, SERVERS.ServerIP, SERVERS.BMID, SERVERS.WAIP FROM SERVERS WHERE SERVERS.ID = {serverid}', once=True)
+            value = f"Abbreviation: {server}\nIP: {server_IP}\nWebAdmin IP: {waIP}\nBattleMetrics ID: {bmID}"
+            embed.add_field(name=server_name, value=value)
         return Response(embed=embed)
 
     @Decorators.command('Abbreviation', 'BattleMetrics_ID', 'WebAdmin_IP:PORT')
-    async def addserver(self, guild_id, data, **kwargs):
+    def addserver(self, guild_id, data, **kwargs):
         """adds a server to your guilds server list"""
         abbr, bmID, waIP, waUsername, waPassword = [option['value'] for option in data['options']]
+        logindata = {'username': waUsername, 'password': waPassword}
 
         if abbr in self.app.active_guilds[guild_id]['servers']:
             return Response('Abbreviation already in use')
 
-        def get_webadmin_IP_list():
-            webadmin_IP_list = []
-            for server in app.active_guilds[str(message.guild.id)]['servers']:
-                server_config = app.load_file(f'./data/{str(message.guild.id)}/{server}/config.json')
-                webadmin_IP_list.append(server_config['webadmin_IP'])
-            return webadmin_IP_list
+        waIP_list = self.app.run_sql('SELECT SERVERS.WAIP FROM SERVERS')
+        if waIP in waIP_list:
+            return Response('This server is already in your server list')
 
-        webadmin_IP_list = get_webadmin_IP_list()
-        if webadmin_IP in webadmin_IP_list:
-            await message.channel.send('This server is already in your server list')
+        async def check_webadmin():
+            async with WebAdminSession(f'http://{waIP}') as webadmin:
+                try:
+                    await webadmin.login(logindata)
+                except IncorrectLogindata:
+                    return Response('Incorrect Logindata. To try again, restart the process')
+                except:
+                    return Response('WebAdmin_IP is invalid')
 
-        async with WebAdminSession(f'http://{webadmin_IP}') as webadmin:
-            try:
-                async with webadmin.get(webadmin.WAURL) as webadminpage:
-                    if str(webadminpage.url) != f'{webadmin.WAURL}/ServerAdmin/':
-                        await message.channel.send('WebAdmin_IP is invalid')
-                        print(f'{webadmin.WAURL}/ServerAdmin/')
-                        print(webadminpage.url)
-                        return
-            except:
-                print(webadmin_IP)
-                await message.channel.send('WebAdmin_IP is invalid')
-                return
+        webadmin_check = self.app.run_async(check_webadmin())
+        if webadmin_check:
+            return webadmin_check
 
-            try:
-                await webadmin.login(logindata)
-            except IncorrectLogindata:
-                await message.channel.send('Incorrect Logindata. To try again, restart the process')
-                return
+        async def get_bminfo():
+            async with BattleMetricsSession(bmID) as battlemetrics:
+                info = await battlemetrics.getinfo()
+                server_name = info['data']['attributes']['name']
+                server_IP = f"{info['data']['attributes']['ip']}:{info['data']['attributes']['port']}"
+                return server_name, server_IP
 
-        async with BattleMetricsSession(battlemetrics_ID) as battlemetrics:
-            info = await battlemetrics.getinfo()
-            server_name = info['data']['attributes']['name']
-            server_IP = f"{info['data']['attributes']['ip']}:{info['data']['attributes']['port']}"
+        server_name, server_IP = self.app.run_async(get_bminfo())
 
-        app.active_guilds[str(message.guild.id)]['servers'].append(abbreviation)
-        app.dump_file('./data/active_guilds.json', app.active_guilds)
-        os.makedirs(os.path.dirname(f'./data/{str(message.guild.id)}/{abbreviation}/'), exist_ok=True)
-        app.dump_file(f'./data/{str(message.guild.id)}/{abbreviation}/config.json', {'server_name': server_name, 'server_IP': server_IP, 'battlemetrics_ID': battlemetrics_ID, 'webadmin_IP': webadmin_IP, 'logindata': logindata})
-        await message.channel.send(f'{server_name} has been added to your server list as {abbreviation}')
+        logindata.pop('token', None)
+
+        server_ID = self.app.run_sql("INSERT INTO SERVERS(Name, ServerIP, BMID, WAIP, Logindata) VALUES(%s, %s, %s, %s, %s)", server_name, server_IP, bmID, waIP, logindata, ret_ID=True)
+
+        self.app.active_guilds[guild_id]['servers'][abbr] = server_ID
+        self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
+        return Response(f'{server_name} has been added to your server list as {abbr}\nServer ID: {server_ID}')
 
     @Decorators.command('Abbreviation')
     async def removeserver(self, app, message,  abbreviation):
