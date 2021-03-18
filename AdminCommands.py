@@ -25,7 +25,7 @@ class AdminCommands(Commands):
         """displays the current bot status (connected, validated, premium guilds)"""
         embed = Embed(title='Active Servers', color=0xD84800)
         guilds = self.app.run_async(self.app.client.fetch_guilds().flatten())
-        [embed.add_field(name=guild.name, value=f"ID: {guild.id}\nValidated: {'False' if guild.id not in self.app.active_guilds else str(self.app.active_guilds[guild.id]['validated'])}\nPremium: {'False' if guild.id not in self.app.active_guilds else str(self.app.active_guilds[guild.id]['premium'])}") for guild in guilds]
+        [embed.add_field(name=guild.name, value=f"ID: {guild.id}\nValidated: {'False' if str(guild.id) not in self.app.active_guilds else str(self.app.active_guilds[str(guild.id)]['validated'])}\nPremium: {'False' if str(guild.id) not in self.app.active_guilds else str(self.app.active_guilds[str(guild.id)]['premium'])}") for guild in guilds]
         return Response(embed=embed)
 
     @Decorators.command()
@@ -38,8 +38,8 @@ class AdminCommands(Commands):
     @Decorators.command('Guild_ID', 'Role_ID')
     def validate(self, data, **kwargs):
         """validates the given guild by ID"""
-        guild_ID = int(data['options'][0]['value'])
-        role_ID = str(data['options'][1]['value'])
+        guild_ID, role_ID = [option['value'] for option in data['options']]
+
         guild = self.app.run_async(self.app.client.fetch_guild(guild_ID))
         if guild_ID not in self.app.active_guilds.keys():
             self.app.active_guilds[guild_ID] = {'admin': role_ID, 'validated': True, 'premium': False, 'servers': []}
@@ -53,25 +53,27 @@ class AdminCommands(Commands):
         return Response(f"{guild.name} - {guild_ID} has been validated!")
 
     @Decorators.command('Guild_ID')
-    def premium(self, app, message, guild_ID):
+    def premium(self, data):
         """rewards the given guild premium by ID"""
-        if guild_ID not in self.app.active_guilds.keys() or not self.app.active_guilds[guild_ID]['validated']:
+        guild_ID = data['options'][0]['value']
+        if guild_ID not in self.app.active_guilds or not self.app.active_guilds[guild_ID]['validated']:
             return Response('Server must be validated first')
         self.app.active_guilds[guild_ID]['premium'] = True
-        self.app.dump_file('./data/active_guilds.json', app.active_guilds)
-        return Response(f'{app.get_guild(int(guild_ID)).name} - {guild_ID} has been awarded with premium!')
+        self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
+        return Response(f'{self.app.run_async(self.app.fetch_guild(guild_ID)).name} - {guild_ID} has been awarded with premium!')
 
     @Decorators.command('Guild_ID')
-    def revoke(self, app, message, guild_ID):
+    def revoke(self, data):
         """revokes the given guild by ID"""
-        if guild_ID not in self.app.active_guilds.keys():
-            return Response('Server not found')
+        guild_ID = data['options'][0]['value']
+        if guild_ID not in self.app.active_guilds:
+            return Response('Guild not found')
         if not self.app.active_guilds[guild_ID]['validated']:
-            return Response('Server already revoked')
+            return Response('Guild already revoked')
         self.app.active_guilds[guild_ID]['validated'] = False
         self.app.active_guilds[guild_ID]['premium'] = False
         self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
-        return Response(f'{app.get_guild(int(guild_ID)).name} - {guild_ID} has been revoked!')
+        return Response(f'{self.app.run_async(self.app.fetch_guild(guild_ID)).name} - {guild_ID} has been revoked!')
 
     @Decorators.command('File_Path')
     async def download(self, app, message, file_path):
@@ -95,30 +97,30 @@ class AdminCommands(Commands):
         print(f'File was uploaded to {file_path}')
 
     @Decorators.command('File')
-    async def dump(self, app, message, file):
+    async def dump(self, data, **kwargs):
         """dumps the given file"""
+        file = data['options'][0]['value']
         if file == 'active_guilds':
-            app.dump_file('./data/active_guilds.json', app.active_guilds)
+            self.app.dump_file('./data/active_guilds.json', app.active_guilds)
         elif file == 'config':
-            app.dump_file('./config.json', app.config)
+            self.app.dump_file('./config.json', app.config)
         else:
-            await message.channel.send('File wasn\'t found')
-            return
-        await message.channel.send(f'{file} was dumped')
+            return Response('File wasn\'t found')
         print(f'{file} was dumped')
+        return Response(f'{file} was dumped')
 
     @Decorators.command('File')
-    async def load(self, app, message, file):
+    async def load(self, data, **kwargs):
         """loads the given file"""
+        file = data['options'][0]['value']
         if file == 'active_guilds':
-            app.active_guilds = app.load_file('./data/active_guilds.json')
+            self.app.active_guilds = self.app.load_file('./data/active_guilds.json')
         elif file == 'config':
-            app.config = app.load_file('./config.json')
+            self.app.config = self.app.load_file('./config.json')
         else:
-            await message.channel.send('File wasn\'t found')
-            return
-        await message.channel.send(f'{file} was loaded')
+            return Response('File wasn\'t found')
         print(f'{file} was loaded')
+        return Response(f'{file} was loaded')
 
     @Decorators.command
     def add_command(self, data):
