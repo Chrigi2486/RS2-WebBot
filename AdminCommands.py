@@ -60,7 +60,7 @@ class AdminCommands(Commands):
             return Response('Server must be validated first')
         self.app.active_guilds[guild_ID]['premium'] = True
         self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
-        return Response(f'{self.app.run_async(self.app.fetch_guild(guild_ID)).name} - {guild_ID} has been awarded with premium!')
+        return Response(f'{self.app.run_async(self.app.client.fetch_guild(guild_ID)).name} - {guild_ID} has been awarded with premium!')
 
     @Decorators.command('Guild_ID')
     def revoke(self, data, **kwargs):
