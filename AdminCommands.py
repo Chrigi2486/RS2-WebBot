@@ -43,7 +43,6 @@ class AdminCommands(Commands):
         guild = self.app.run_async(self.app.client.fetch_guild(guild_ID))
         if guild_ID not in self.app.active_guilds.keys():
             self.app.active_guilds[guild_ID] = {'admin': role_ID, 'validated': True, 'premium': False, 'servers': {}}
-            os.makedirs(os.path.dirname(f'./data/{guild_ID}/'), exist_ok=True)
         else:
             if self.app.active_guilds[guild_ID]['validated']:
                 return Response('Server is already validated')
