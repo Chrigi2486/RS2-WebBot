@@ -15,10 +15,10 @@ class AdminCommands(Commands):
     def __str__(self):
         return 'Admin Commands'
 
-    @Decorators.command()
-    async def adminhelp(self, app, message):
-        """displays the admin commands"""
-        await message.channel.send(app.list_commands(app.basic_commands, app.premium_commands, app.admin_commands))
+    # @Decorators.command()
+    # async def adminhelp(self, app, message):
+    #     """displays the admin commands"""
+    #     await message.channel.send(app.list_commands(app.basic_commands, app.premium_commands, app.admin_commands))
 
     @Decorators.command()
     def stats(self, **kwargs):
