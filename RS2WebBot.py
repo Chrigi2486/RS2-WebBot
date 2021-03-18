@@ -88,7 +88,7 @@ class RS2WebBot(Flask):
                 return self.run_command(commands, data)
             return Response('You aren\'t authorised to use this command!')
 
-        if 'guild_id' in self.active_guilds and self.active_guilds['guild_id']['validated']:
+        if data['guild_id'] in self.active_guilds and self.active_guilds['guild_id']['validated']:
             if self.active_guilds[data['guild_id']]['admin'] in data['member']['roles']:
                 return self.run_command(commands, data)
             return Response('You aren\'t authorised to use this command!')
