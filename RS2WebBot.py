@@ -20,7 +20,6 @@ class RS2WebBot(Flask):
 
     CLIENT_PUBLIC_KEY = os.getenv('CLIENT_PUBLIC_KEY')
     BOT_TOKEN = os.getenv('BOT_TOKEN')
-    HEADER = {'Authorization': f'Bot {BOT_TOKEN}'}
     CLIENT_ID = os.getenv('CLIENT_ID')
     MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
 
