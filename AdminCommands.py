@@ -42,7 +42,7 @@ class AdminCommands(Commands):
 
         guild = self.app.run_async(self.app.client.fetch_guild(guild_ID))
         if guild_ID not in self.app.active_guilds.keys():
-            self.app.active_guilds[guild_ID] = {'admin': role_ID, 'validated': True, 'premium': False, 'servers': []}
+            self.app.active_guilds[guild_ID] = {'admin': role_ID, 'validated': True, 'premium': False, 'servers': {}}
             os.makedirs(os.path.dirname(f'./data/{guild_ID}/'), exist_ok=True)
         else:
             if self.app.active_guilds[guild_ID]['validated']:
@@ -53,7 +53,7 @@ class AdminCommands(Commands):
         return Response(f"{guild.name} - {guild_ID} has been validated!")
 
     @Decorators.command('Guild_ID')
-    def premium(self, data):
+    def premium(self, data, **kwargs):
         """rewards the given guild premium by ID"""
         guild_ID = data['options'][0]['value']
         if guild_ID not in self.app.active_guilds or not self.app.active_guilds[guild_ID]['validated']:
@@ -63,7 +63,7 @@ class AdminCommands(Commands):
         return Response(f'{self.app.run_async(self.app.fetch_guild(guild_ID)).name} - {guild_ID} has been awarded with premium!')
 
     @Decorators.command('Guild_ID')
-    def revoke(self, data):
+    def revoke(self, data, **kwargs):
         """revokes the given guild by ID"""
         guild_ID = data['options'][0]['value']
         if guild_ID not in self.app.active_guilds:
