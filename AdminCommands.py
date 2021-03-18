@@ -1,5 +1,3 @@
-import os
-import requests
 from discord import Embed
 from Commands import Commands
 from Decorators import Decorators
