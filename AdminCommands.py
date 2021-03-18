@@ -38,9 +38,8 @@ class AdminCommands(Commands):
     @Decorators.command('Guild_ID', 'Role_ID')
     def validate(self, data, **kwargs):
         """validates the given guild by ID"""
-        guild_ID = data['options'][0]['value']
-        print(guild_ID)
-        role_ID = data['options'][1]['value']
+        guild_ID = int(data['options'][0]['value'])
+        role_ID = str(data['options'][1]['value'])
         guild = self.app.run_async(self.app.client.fetch_guild(guild_ID))
         if guild_ID not in self.app.active_guilds.keys():
             self.app.active_guilds[guild_ID] = {'admin': role_ID, 'validated': True, 'premium': False, 'servers': []}
