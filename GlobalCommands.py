@@ -16,7 +16,7 @@ class GlobalCommands(Commands):
         return 'Basic Commands'
 
     @Decorators.command()
-    async def servers(self, guild_id, **kwargs):
+    def servers(self, guild_id, **kwargs):
         """lists the servers in your guilds server list"""
         if not self.app.active_guilds[guild_id]['servers']:
             return Response('Your server list is empty')
