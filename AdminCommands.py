@@ -122,6 +122,7 @@ class AdminCommands(Commands):
         return Response(f'{file} was loaded')
 
     @Decorators.command()
-    def test(self, data, **kwargs):
-        resp = self.app.run_sql('show tables;')
-        return Response(str(resp))
+    def sql(self, data, **kwargs):
+        command = data['options'][0]['value']
+        result = self.app.run_sql(command)
+        return Response(str(result))
