@@ -123,4 +123,5 @@ class AdminCommands(Commands):
 
     @Decorators.command()
     def test(self, data, **kwargs):
-        self.app.run_sql('show tables;')
+        resp = self.app.run_sql('show tables;')
+        return Response(str(resp))
