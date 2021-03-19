@@ -73,7 +73,7 @@ class GlobalCommands(Commands):
 
         self.app.active_guilds[guild_id]['servers'][abbr] = server_ID
         self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
-        return Response(f'{server_name} has been added to your server list as {abbr}\nServer ID: {server_ID}')
+        return Response(f'{server_name} has been added to your server list as {abbr}\nServer ID: {server_ID}\nMake sure to delete any messages containing passwords!')
 
     @Decorators.command('Abbreviation')
     def removeserver(self, guild_id, data, **kwargs):
