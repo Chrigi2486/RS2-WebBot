@@ -38,6 +38,9 @@ class GlobalCommands(Commands):
         if abbr in self.app.active_guilds[guild_id]['servers']:
             return Response('Abbreviation already in use')
 
+        waIP = waIP.split('//')[1]
+        waIP = waIP.split('/')[0]
+
         waIP_list = self.app.run_sql('SELECT SERVERS.WAIP FROM SERVERS')
         if waIP in waIP_list:
             return Response('This server is already in your server list')
@@ -48,8 +51,8 @@ class GlobalCommands(Commands):
                     await webadmin.login(logindata)
                 except IncorrectLogindata:
                     return Response('Incorrect Logindata. To try again, restart the process')
-                except:
-                    return Response('WebAdmin_IP is invalid')
+                # except:
+                #     return Response('WebAdmin_IP is invalid')
 
         webadmin_check = self.app.run_async(check_webadmin())
         if webadmin_check:
@@ -73,7 +76,7 @@ class GlobalCommands(Commands):
         return Response(f'{server_name} has been added to your server list as {abbr}\nServer ID: {server_ID}')
 
     @Decorators.command('Abbreviation')
-    async def removeserver(self, app, message,  abbreviation):
+    async def removeserver(self, app, message, abbreviation):
         """removes the given server from your guilds server list"""
         if abbreviation not in app.active_guilds[str(message.guild.id)]['servers']:
             await message.channel.send('Server not in your guilds server list')
