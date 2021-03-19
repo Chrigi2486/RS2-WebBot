@@ -76,8 +76,13 @@ class GlobalCommands(Commands):
         return Response(f'{server_name} has been added to your server list as {abbr}\nServer ID: {server_ID}')
 
     @Decorators.command('Abbreviation')
-    async def removeserver(self, app, message, abbreviation):
+    def removeserver(self, guild_id, data, **kwargs):
         """removes the given server from your guilds server list"""
-        if abbreviation not in app.active_guilds[str(message.guild.id)]['servers']:
-            await message.channel.send('Server not in your guilds server list')
-            return
+        abbr = data['options'][0]['value']
+        if abbr not in self.app.active_guilds[guild_id]['servers']:
+            return Response('Server not in your guilds server list')
+        server_id = self.app.active_guilds[guild_id]['servers'][abbr]
+        self.app.run_sql(f'DELETE FROM SERVERS WHERE SERVERS.ID = {server_id}')
+        self.app.run_sql(f'DELETE FROM STATS WHERE STATS.SID = {server_id}')
+        self.app.run_sql(f'DELETE FROM BANS WHERE BANS.SID = {server_id}')
+        return Response(f'{abbr} has been removed from your server list')
