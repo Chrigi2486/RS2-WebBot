@@ -1,6 +1,9 @@
+import importlib
 from discord import Embed
 from Commands import Commands
 from Decorators import Decorators
+from HTTPDiscord import Route
+import GuildCommands
 from DiscordDataTypes import Response, Message
 
 
@@ -9,6 +12,7 @@ class AdminCommands(Commands):
 
     def __init__(self, app):
         self.app = app
+        self.guild_command_blueprints = self.app.guild_commands.command_blueprints
 
     def __str__(self):
         return 'Admin Commands'
@@ -29,7 +33,8 @@ class AdminCommands(Commands):
     @Decorators.command()
     def update(self, data, **kwargs):
         """Use with caution. Parameters: basic, premium, admin"""
-        globalc, guildc, adminc = self.app.update_commands(**{option['name']: option['value'] for option in (data['options'] if 'options' in data else [])})
+        to_update = {option['name']: option['value'] for option in (data['options'] if 'options' in data else [])}
+        globalc, guildc, adminc = self.app.update_commands(**to_update)
         print(f'Updated:\nGlobal:{globalc}\nGuild:{guildc}\nAdmin:{adminc}')
         return Response(f'Updated:\nGlobal: {globalc}\nGuild: {guildc}\nAdmin: {adminc}')
 
@@ -40,7 +45,7 @@ class AdminCommands(Commands):
 
         guild = self.app.run_async(self.app.client.fetch_guild(guild_ID))
         if guild_ID not in self.app.active_guilds.keys():
-            self.app.active_guilds[guild_ID] = {'admin': role_ID, 'validated': True, 'premium': False, 'servers': {}}
+            self.app.active_guilds[guild_ID] = {'admin': role_ID, 'validated': True, 'premium': False, 'servers': {}, 'commands' {}}
         else:
             if self.app.active_guilds[guild_ID]['validated']:
                 return Response('Server is already validated')
@@ -57,6 +62,9 @@ class AdminCommands(Commands):
             return Response('Server must be validated first')
         self.app.active_guilds[guild_ID]['premium'] = True
         self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
+        for command in self.guild_command_blueprints:
+            resp = self.app.create_guild_command(guild_ID, self.guild_command_blueprints[command])
+            self.app.active_guilds[guild_id]['commands'][command] = resp['id']
         return Response(f'{self.app.run_async(self.app.client.fetch_guild(guild_ID)).name} - {guild_ID} has been awarded with premium!')
 
     @Decorators.command('Guild_ID')
