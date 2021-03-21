@@ -45,7 +45,7 @@ class AdminCommands(Commands):
 
         guild = self.app.run_async(self.app.client.fetch_guild(guild_ID))
         if guild_ID not in self.app.active_guilds.keys():
-            self.app.active_guilds[guild_ID] = {'admin': role_ID, 'validated': True, 'premium': False, 'servers': {}, 'commands' {}}
+            self.app.active_guilds[guild_ID] = {'admin': role_ID, 'validated': True, 'premium': False, 'servers': {}, 'commands': {}}
         else:
             if self.app.active_guilds[guild_ID]['validated']:
                 return Response('Server is already validated')

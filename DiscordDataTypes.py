@@ -53,15 +53,15 @@ class SubCommand:
 
 class CommandOption:
 
-    def __init__(self, name: str, description: str, otype: int, required: bool = True, choices: [CommandOptionChoice] = []):
+    def __init__(self, name: str, description: str, otype: int = 3, required: bool = True, choices: [CommandOptionChoice] = None):
         self.name = name
         self.description = description
         self.otype = otype
         self.required = required
-        self.choices = choices
+        self.choices = [] if choices is None else choices
 
     def to_dict(self):
-        return {'name': self.name, 'description': self.description, 'otype': self.otype, 'required': self.required, 'choices': [choice.to_dict() for choice in self.choices]}
+        return {'name': self.name, 'description': self.description, 'type': self.otype, 'required': self.required, 'choices': [choice.to_dict() for choice in self.choices]}
 
 
 class GlobalCommand:

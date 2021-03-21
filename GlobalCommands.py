@@ -11,7 +11,6 @@ class GlobalCommands(Commands):
 
     def __init__(self, app):
         self.app = app
-        self.guild_command_blueprints = self.app.guild_commands.command_blueprints
         self.guild_command_options = self.app.guild_commands.command_options
 
     def __str__(self):
@@ -75,7 +74,7 @@ class GlobalCommands(Commands):
 
         self.app.active_guilds[guild_id]['servers'][abbr] = server_ID
         self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
-        for command in self.guild_command_blueprints:
+        for command in self.guild_command_options:
             command_id = self.app.active_guilds[guild_id][command]
             payload = self.app.get_guild_command(guild_id, command_id)['options']
             payload.append({"name": abbr, "description": server_name, "type": 1, "options": self.guild_command_options[command]})

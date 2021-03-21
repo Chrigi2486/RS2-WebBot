@@ -28,10 +28,13 @@ class Decorators:
         return register_command
 
     @staticmethod
-    def guild_command(blueprint, options=[]):
+    def guild_command(options=None):
+        if options is None:
+            options = []
+
         def register_command(func):
             func.command = True
-            func.blueprint = blueprint
-            func.options = options
+            func.blueprint = {'type': 2, 'name': func.__name__, 'description': func.__doc__, 'options': []}
+            func.options = [option.to_dict() for option in options]
             return func
         return register_command
