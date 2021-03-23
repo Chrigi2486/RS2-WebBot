@@ -5,7 +5,7 @@ from DiscordDataTypes import CommandOption as Option
 
 @Decorators.guild_commands
 class GuildCommands(Commands):  # Make these commands a sub_command_group (type 2)
-
+                                # Instead of subcommands I can just make it an option server with choices of the servers
     def __init__(self, app):
         self.app = app
 
