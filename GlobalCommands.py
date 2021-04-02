@@ -76,9 +76,12 @@ class GlobalCommands(Commands):
         self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
         for command in self.guild_command_options:
             command_id = self.app.active_guilds[guild_id]['commands'][command]
-            payload = self.app.get_guild_command(guild_id, command_id)['options']
-            payload.append({"name": abbr, "description": server_name, "type": 1, "options": self.guild_command_options[command]})
-            self.app.edit_guild_command(guild_id, command_id, payload)
+            try:
+                options = self.app.get_guild_command(guild_id, command_id)['options']
+            except KeyError:
+                options = []
+            options.append({"name": abbr, "description": server_name, "type": 1, "options": self.guild_command_options[command]})
+            self.app.edit_guild_command(guild_id, command_id, {'options': options})
         return Response(f'{server_name} has been added to your server list as {abbr}\nServer ID: {server_ID}\nMake sure to delete any messages containing passwords!')
 
     @Decorators.command('Abbreviation')
