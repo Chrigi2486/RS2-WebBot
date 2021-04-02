@@ -13,6 +13,7 @@ class Decorators:
     def guild_commands(inst):
         inst.commands = dict()
         inst.command_blueprints = dict()
+        inst.command_options = dict()
         for name, func in inst.__dict__.items():
             if hasattr(func, 'command'):
                 inst.commands[name] = func
