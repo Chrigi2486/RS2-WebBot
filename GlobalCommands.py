@@ -55,7 +55,7 @@ class GlobalCommands(Commands):
                 # except:
                 #     return Response('WebAdmin_IP is invalid')
 
-        webadmin_check = self.app.run_async(check_webadmin())
+        webadmin_check = None  # self.app.run_async(check_webadmin())
         if webadmin_check:
             return webadmin_check
 
