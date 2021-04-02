@@ -105,12 +105,12 @@ class RS2WebBot(Flask):
             return Response(f'An Error occured! Please contact a member of the -[FGC]- Team and provide the error message below :)\n**Command:** {command}\n**Error:** {e}')
 
     def update_commands(self, globalc=False, guildc=False, adminc=False):
-        if globalc:
-            importlib.reload(GlobalCommands)
-            self.global_commands = GlobalCommands.GlobalCommands(self)
         if guildc:
             importlib.reload(GuildCommands)
             self.guild_commands = GuildCommands.GuildCommands(self)
+        if globalc:
+            importlib.reload(GlobalCommands)
+            self.global_commands = GlobalCommands.GlobalCommands(self)
         if adminc:
             importlib.reload(AdminCommands)
             self.admin_commands = AdminCommands.AdminCommands(self)
