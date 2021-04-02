@@ -124,6 +124,12 @@ class RS2WebBot(Flask):
         with open(path, 'w') as file:
             dump(data, file)
 
+    def get_global_command(self, command_id):
+        return self.run_async(self.client.http.request(Route('GET', f'/applications/{self.CLIENT_ID}/commands/{command_id}')))
+
+    def get_guild_command(self, guild_id, command_id):
+        return self.run_async(self.client.http.request(Route('GET', f'/applications/{self.CLIENT_ID}/guilds/{guild_id}/commands/{command_id}')))
+
     def create_global_command(self, payload):
         return self.run_async(self.client.http.request(Route('POST', f'/applications/{self.CLIENT_ID}/commands'), json=payload))
 
