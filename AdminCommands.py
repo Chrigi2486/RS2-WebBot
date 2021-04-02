@@ -64,7 +64,7 @@ class AdminCommands(Commands):
         self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
         for command in self.guild_command_blueprints:
             resp = self.app.create_guild_command(guild_ID, self.guild_command_blueprints[command])
-            self.app.active_guilds[guild_id]['commands'][command] = resp['id']
+            self.app.active_guilds[guild_ID]['commands'][command] = resp['id']
         return Response(f'{self.app.run_async(self.app.client.fetch_guild(guild_ID)).name} - {guild_ID} has been awarded with premium!')
 
     @Decorators.command('Guild_ID')
