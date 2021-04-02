@@ -35,7 +35,7 @@ class Decorators:
 
         def register_command(func):
             func.command = True
-            func.blueprint = {'type': 2, 'name': func.__name__, 'description': func.__doc__, 'options': []}
+            func.blueprint = {'name': func.__name__, 'description': func.__doc__, 'options': []}
             func.options = [option.to_dict() for option in options]
             return func
         return register_command
