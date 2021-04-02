@@ -29,4 +29,5 @@ class GuildCommands(Commands):  # Make these commands a sub_command_group (type 
 
     @Decorators.guild_command(options=[Option("player_id", "The ID to ban"), Option("reason", "Reason to ban the player")])
     def banid(self):
+        """Bans a given ID"""
         pass
