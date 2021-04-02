@@ -70,7 +70,7 @@ class GlobalCommands(Commands):
 
         logindata.pop('token', None)
 
-        server_ID = self.app.run_sql("INSERT INTO SERVERS(Name, ServerIP, BMID, WAIP, Logindata) VALUES(%s, %s, %s, %s, %s)", server_name, server_IP, bmID, waIP, logindata, ret_ID=True)
+        server_ID = self.app.run_sql("INSERT INTO SERVERS(Name, ServerIP, BMID, WAIP, Logindata) VALUES(%s, %s, %s, %s, %s)", server_name, server_IP, bmID, waIP, str(logindata), ret_ID=True)
 
         self.app.active_guilds[guild_id]['servers'][abbr] = server_ID
         self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
