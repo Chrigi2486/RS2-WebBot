@@ -61,10 +61,10 @@ class AdminCommands(Commands):
         if guild_ID not in self.app.active_guilds or not self.app.active_guilds[guild_ID]['validated']:
             return Response('Server must be validated first')
         self.app.active_guilds[guild_ID]['premium'] = True
-        self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
         for command in self.guild_command_blueprints:
             resp = self.app.create_guild_command(guild_ID, self.guild_command_blueprints[command])
             self.app.active_guilds[guild_ID]['commands'][command] = resp['id']
+        self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
         return Response(f'{self.app.run_async(self.app.client.fetch_guild(guild_ID)).name} - {guild_ID} has been awarded with premium!')
 
     @Decorators.command('Guild_ID')
