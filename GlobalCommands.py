@@ -43,6 +43,7 @@ class GlobalCommands(Commands):
         waIP = waIP.strip(string.ascii_letters + '/:')
 
         waIP_list = self.app.run_sql('SELECT SERVERS.WAIP FROM SERVERS')
+        print(waIP_list)
         if waIP in waIP_list:
             return Response('This server is already in your server list')
 
