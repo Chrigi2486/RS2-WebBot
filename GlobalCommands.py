@@ -1,3 +1,4 @@
+import string
 import discord
 from Commands import Commands
 from Decorators import Decorators
@@ -39,8 +40,7 @@ class GlobalCommands(Commands):
         if abbr in self.app.active_guilds[guild_id]['servers']:
             return Response('Abbreviation already in use')
 
-        waIP = waIP.split('//')[1]
-        waIP = waIP.split('/')[0]
+        waIP = waIP.strip(string.ascii_letters + '/:')
 
         waIP_list = self.app.run_sql('SELECT SERVERS.WAIP FROM SERVERS')
         if waIP in waIP_list:
