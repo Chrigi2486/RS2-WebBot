@@ -75,7 +75,7 @@ class GlobalCommands(Commands):
         self.app.active_guilds[guild_id]['servers'][abbr] = server_ID
         self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
         for command in self.guild_command_options:
-            command_id = self.app.active_guilds[guild_id][command]
+            command_id = self.app.active_guilds[guild_id]['commands'][command]
             payload = self.app.get_guild_command(guild_id, command_id)['options']
             payload.append({"name": abbr, "description": server_name, "type": 1, "options": self.guild_command_options[command]})
             self.app.edit_guild_command(guild_id, command_id, payload)
