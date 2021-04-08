@@ -28,6 +28,10 @@ class Route:
 class Parser:
 
     @staticmethod
+    def parse_page_title(resp):
+        return BeautifulSoup(resp, 'hml.parser').html.title.string
+
+    @staticmethod
     def parse_current(resp):
         html = BeautifulSoup(resp, 'html.parser')
         players = html.select('#currentRules > dd:nth-child(6)')[0].string.split(' ')[0]
