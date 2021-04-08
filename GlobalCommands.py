@@ -68,11 +68,10 @@ class GlobalCommands(Commands):
             return webadmin_check
 
         async def get_bminfo():
-            async with BattleMetricsSession(bmID) as battlemetrics:
-                info = await battlemetrics.getinfo()
-                server_name = info['data']['attributes']['name']
-                server_IP = f"{info['data']['attributes']['ip']}:{info['data']['attributes']['port']}"
-                return server_name, server_IP
+            info = await self.app.client.http.request(BMRoute('GET', bmID, ''))
+            server_name = info['data']['attributes']['name']
+            server_IP = f"{info['data']['attributes']['ip']}:{info['data']['attributes']['port']}"
+            return server_name, server_IP
 
         server_name, server_IP = self.app.run_async(get_bminfo())
 
@@ -81,7 +80,7 @@ class GlobalCommands(Commands):
         self.app.active_guilds[guild_id]['servers'][abbr] = server_ID
         self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
         get_requests = []
-        for command in self.guild_command_options:
+        for command in self.app.active_guilds[guild_id]['commands']:
             command_id = self.app.active_guilds[guild_id]['commands'][command]
             get_requests.append(self.app.get_guild_command(guild_id, command_id))
         command_infos = self.app.run_async(asyncio.gather(*get_requests))
@@ -109,7 +108,7 @@ class GlobalCommands(Commands):
         self.app.run_sql(f'DELETE FROM STATS WHERE STATS.SID = {server_id}')
         self.app.run_sql(f'DELETE FROM BANS WHERE BANS.SID = {server_id}')
         get_requests = []
-        for command in self.guild_command_options:
+        for command in self.app.active_guilds[guild_id]['commands']:
             command_id = self.app.active_guilds[guild_id]['commands'][command]
             get_requests.append(self.app.get_guild_command(guild_id, command_id))
         command_infos = self.app.run_async(asyncio.gather(*get_requests))
