@@ -55,14 +55,14 @@ class RS2WebBot(Flask):
     def add_async(self, command):
         return self.client.loop.create_task(command)
 
-    def run_sql(self, command, *args, ret_ID=False, once=False):
+    def run_sql(self, command, *args, ret_ID=False, one=False):
         database = mysql.connector.connect(user='RS2WebBot', password=self.MYSQL_PASSWORD, host='127.0.0.1', database='RS2Database')
         cursor = database.cursor()
         cursor.execute(command, args)
         if ret_ID:
             result = cursor.lastrowid
-        elif once:
-            result = cursor.fetchonce()
+        elif one:
+            result = cursor.fetchone()
         else:
             result = cursor.fetchall()
         cursor.close()

@@ -26,9 +26,9 @@ class GlobalCommands(Commands):
             return Response('Your server list is empty')
 
         embed = discord.Embed(title='Server List')
-        for server in self.app.active_guilds[guild_id]['servers']:
-            serverid = self.app.active_guilds[guild_id]['servers'][server]
-            server_name, server_IP, bmID, waIP = self.app.run_sql(f'SELECT SERVERS.Name, SERVERS.ServerIP, SERVERS.BMID, SERVERS.WAIP FROM SERVERS WHERE SERVERS.ID = {serverid}', once=True)
+        servers = self.app.run_sql(f"SELECT SERVERS.Name, SERVERS.ServerIP, SERVERS.BMID, SERVERS.WAIP FROM SERVERS WHERE SERVERS.ID IN {self.app.active_guilds[guild_id]['servers'].values()}")
+        for server in servers:
+            server_name, server_IP, bmID, waIP = server
             value = f"Abbreviation: {server}\nIP: {server_IP}\nWebAdmin IP: {waIP}\nBattleMetrics ID: {bmID}"
             embed.add_field(name=server_name, value=value)
         return Response(embed=embed)
