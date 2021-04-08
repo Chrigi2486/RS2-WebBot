@@ -9,7 +9,6 @@ from HTTPBattleMetrics import Route as BMRoute
 from Commands import Commands
 from Decorators import Decorators
 from DiscordDataTypes import Response
-from BattleMetrics import BattleMetricsSession
 
 
 @Decorators.commands
