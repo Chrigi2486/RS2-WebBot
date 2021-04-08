@@ -4,7 +4,7 @@ import importlib
 import traceback
 from json import load, dump
 from discord import Client
-from HTTPDiscord import HTTPDiscord, Route
+from HTTPDiscord import Route
 from DiscordDataTypes import Response
 from flask import Flask, request, jsonify
 from discord_interactions import verify_key_decorator
@@ -24,8 +24,6 @@ class RS2WebBot(Flask):
     MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
 
     def __init__(self, *args, **kwargs):
-
-        self.discord = HTTPDiscord(self.BOT_TOKEN, self.CLIENT_ID)
 
         self.client = Client()
 
