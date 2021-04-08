@@ -40,7 +40,7 @@ class GuildCommands(Commands):  # Make these commands a sub_command_group (type 
     def write(self, data, guild_id, **kwargs):
         """Sends a given message"""
         server = data['options'][0]['name']
-        webadminip, authcred = [value[0] for value in self.app.run_sql(f"SELECT SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {self.app.active_guilds[guild_id]['servers'][server]}")]
+        webadminip, authcred = self.app.run_sql(f"SELECT SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {self.app.active_guilds[guild_id]['servers'][server]}")[0]
         message = data['options'][0]['options'][0]['value']
         if len(data['options'][0]['options']) == 2:
             team = data['options'][0]['options'][1]['value']
