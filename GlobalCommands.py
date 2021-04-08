@@ -87,13 +87,13 @@ class GlobalCommands(Commands):
         return Response(f'{server_name} has been added to your server list as {abbr}\nServer ID: {server_ID}\nMake sure to delete any messages containing passwords!')
 
     @Decorators.command('Abbreviation')
-    def removeserver(self, guild_id, data, **kwargs):
+    def removeserver(self, guild_id, data, **kwargs):  # TODO remove the subcommands for this server
         """removes the given server from your guilds server list"""
         abbr = data['options'][0]['value']
         if abbr not in self.app.active_guilds[guild_id]['servers']:
             return Response('Server not in your guilds server list')
-        server_id = self.app.active_guilds[guild_id]['servers'][abbr]
-        self.app.active_guilds[guild_id]['servers'].pop(abbr)
+        server_id = self.app.active_guilds[guild_id]['servers'].pop(abbr)
+        self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
         self.app.run_sql(f'DELETE FROM SERVERS WHERE SERVERS.ID = {server_id}')
         self.app.run_sql(f'DELETE FROM STATS WHERE STATS.SID = {server_id}')
         self.app.run_sql(f'DELETE FROM BANS WHERE BANS.SID = {server_id}')
