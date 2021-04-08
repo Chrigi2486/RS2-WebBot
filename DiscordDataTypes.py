@@ -1,6 +1,5 @@
 import requests
 from discord import Embed
-from HTTPDiscord import HTTPDiscord
 
 BASE_URL = 'https://discord.com/api/v8'
 
