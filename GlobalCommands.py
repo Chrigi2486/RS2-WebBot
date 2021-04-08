@@ -2,6 +2,7 @@ import string
 import base64
 import hashlib
 import discord
+import asyncio
 from HTTPWebAdmin import Route as WARoute
 from Commands import Commands
 from Decorators import Decorators
@@ -97,4 +98,19 @@ class GlobalCommands(Commands):
         self.app.run_sql(f'DELETE FROM SERVERS WHERE SERVERS.ID = {server_id}')
         self.app.run_sql(f'DELETE FROM STATS WHERE STATS.SID = {server_id}')
         self.app.run_sql(f'DELETE FROM BANS WHERE BANS.SID = {server_id}')
-        return Response(f'{abbr} has been removed from your server list')
+        get_requests = []
+        for command in self.guild_command_options:
+            command_id = self.app.active_guilds[guild_id]['commands'][command]
+            get_requests.append(self.app.cour_get_guild_command(guild_id, command_id))
+        command_infos = self.app.run_async(asyncio.gather(get_requests))
+        post_requests = []
+        for command in command_infos:
+            command_id = command['id']
+            options = command['options']
+            for i, option in enumerate(options):
+                if option['name'] == abbr:
+                    options.pop(i)
+                    break
+            post_requests.append(self.app.cour_edit_guild_command(guild_id, command_id, {'options': options}))
+        self.app.run_async(asyncio.gather(post_requests))
+        return Response(f'{abbr} has been removed from your server list and our database')
