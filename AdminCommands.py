@@ -1,10 +1,8 @@
-import importlib
+import asyncio
 from discord import Embed
 from Commands import Commands
 from Decorators import Decorators
-from HTTPDiscord import Route
-import GuildCommands
-from DiscordDataTypes import Response, Message
+from DiscordDataTypes import Response
 
 
 @Decorators.commands
@@ -51,6 +49,13 @@ class AdminCommands(Commands):
                 return Response('Server is already validated')
             self.app.active_guilds[guild_ID]['validated'] = True
             self.app.active_guilds[guild_ID]['admin'] = role_ID
+        post_requests = []
+        for command in self.guild_command_blueprints:
+            post_requests.append(self.app.create_guild_command(guild_ID, self.guild_command_blueprints[command]))
+        command_infos = self.app.run_async(asyncio.gather(*post_requests))
+        for command in command_infos:
+            self.app.active_guilds[guild_ID]['commands'][command['name']] = command['id']
+        self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
         self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
         return Response(f"{guild.name} - {guild_ID} has been validated!")
 
@@ -61,10 +66,6 @@ class AdminCommands(Commands):
         if guild_ID not in self.app.active_guilds or not self.app.active_guilds[guild_ID]['validated']:
             return Response('Server must be validated first')
         self.app.active_guilds[guild_ID]['premium'] = True
-        for command in self.guild_command_blueprints:
-            resp = self.app.create_guild_command(guild_ID, self.guild_command_blueprints[command])
-            self.app.active_guilds[guild_ID]['commands'][command] = resp['id']
-        self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
         return Response(f'{self.app.run_async(self.app.client.fetch_guild(guild_ID)).name} - {guild_ID} has been awarded with premium!')
 
     @Decorators.command('Guild_ID')

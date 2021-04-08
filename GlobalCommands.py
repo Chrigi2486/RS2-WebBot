@@ -4,6 +4,8 @@ import hashlib
 import discord
 import asyncio
 from HTTPWebAdmin import Route as WARoute
+from HTTPWebAdmin import Parser as WAParser
+from HTTPBattleMetrics import Route as BMRoute
 from Commands import Commands
 from Decorators import Decorators
 from DiscordDataTypes import Response
@@ -51,14 +53,15 @@ class GlobalCommands(Commands):
         if waIP in waIP_list:
             return Response('This server is already in your server list')
 
-        # async def check_webadmin():
-        #     async with WebAdminSession(f'http://{waIP}') as webadmin:
-        #         try:
-        #             await webadmin.login(logindata)
-        #         except IncorrectLogindata:
-        #             return Response('Incorrect Logindata. To try again, restart the process')
-                # except:
-                #     return Response('WebAdmin_IP is invalid')
+        async def check_webadmin():
+            page = await self.app.client.http.request(WARoute('GET', waIP, '/current'), cookies={'authcred': authcred})
+            title = WAParser.parse_page_title(page)
+            if title == 'Rising Storm 2: Vietnam WebAdmin - Login':
+                return Response('Incorrect Logindata')
+            elif title == 'Rising Storm 2: Vietnam WebAdmin - Current Game':
+                return
+            else:
+                return Response('Is this the right website?')
 
         webadmin_check = None  # self.app.run_async(check_webadmin())
         if webadmin_check:
@@ -77,18 +80,25 @@ class GlobalCommands(Commands):
 
         self.app.active_guilds[guild_id]['servers'][abbr] = server_ID
         self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
+        get_requests = []
         for command in self.guild_command_options:
             command_id = self.app.active_guilds[guild_id]['commands'][command]
-            try:
-                options = self.app.get_guild_command(guild_id, command_id)['options']
-            except KeyError:
+            get_requests.append(self.app.get_guild_command(guild_id, command_id))
+        command_infos = self.app.run_async(asyncio.gather(*get_requests))
+        post_requests = []
+        for command in command_infos:
+            command_id = command['id']
+            if 'options' in command:
+                options = command['options']
+            else:
                 options = []
-            options.append({"name": abbr, "description": server_name, "type": 1, "options": self.guild_command_options[command]})
-            self.app.edit_guild_command(guild_id, command_id, {'options': options})
+            options.append({"name": abbr, "description": server_name, "type": 1, "options": self.guild_command_options[command['name']]})
+            post_requests.append(self.app.edit_guild_command(guild_id, command_id, {'options': options}))
+        self.app.run_async(asyncio.gather(*post_requests))
         return Response(f'{server_name} has been added to your server list as {abbr}\nServer ID: {server_ID}\nMake sure to delete any messages containing passwords!')
 
     @Decorators.command('Abbreviation')
-    def removeserver(self, guild_id, data, **kwargs):  # TODO remove the subcommands for this server
+    def removeserver(self, guild_id, data, **kwargs):
         """removes the given server from your guilds server list"""
         abbr = data['options'][0]['value']
         if abbr not in self.app.active_guilds[guild_id]['servers']:
@@ -101,7 +111,7 @@ class GlobalCommands(Commands):
         get_requests = []
         for command in self.guild_command_options:
             command_id = self.app.active_guilds[guild_id]['commands'][command]
-            get_requests.append(self.app.cour_get_guild_command(guild_id, command_id))
+            get_requests.append(self.app.get_guild_command(guild_id, command_id))
         command_infos = self.app.run_async(asyncio.gather(*get_requests))
         post_requests = []
         for command in command_infos:
@@ -111,6 +121,6 @@ class GlobalCommands(Commands):
                 if option['name'] == abbr:
                     options.pop(i)
                     break
-            post_requests.append(self.app.cour_edit_guild_command(guild_id, command_id, {'options': options}))
+            post_requests.append(self.app.edit_guild_command(guild_id, command_id, {'options': options}))
         self.app.run_async(asyncio.gather(*post_requests))
         return Response(f'{abbr} has been removed from your server list and our database')
