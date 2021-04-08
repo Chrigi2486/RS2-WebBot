@@ -93,7 +93,7 @@ class GlobalCommands(Commands):
             options.append({"name": abbr, "description": server_name, "type": 1, "options": self.guild_command_options[command['name']]})
             post_requests.append(self.app.edit_guild_command(guild_id, command_id, {'options': options}))
         self.app.run_async(asyncio.gather(*post_requests))
-        return Response(f'{server_name} has been added to your server list as {abbr}\nServer ID: {server_ID}\nMake sure to delete any messages containing passwords!')
+        return Response(f'{server_name} has been added to your server list\nAbbreviation: {abbr}\nServer ID: {server_ID}\nMake sure to delete any messages containing passwords!')
 
     @Decorators.command('Abbreviation')
     def removeserver(self, guild_id, data, **kwargs):
