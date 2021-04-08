@@ -1,9 +1,11 @@
 import string
+import base64
+import hashlib
 import discord
+from HTTPWebAdmin import Route as WARoute
 from Commands import Commands
 from Decorators import Decorators
 from DiscordDataTypes import Response
-from WebAdmin import WebAdminSession, IncorrectLogindata, ServerOffline
 from BattleMetrics import BattleMetricsSession
 
 
@@ -35,24 +37,24 @@ class GlobalCommands(Commands):
     def addserver(self, guild_id, data, **kwargs):
         """adds a server to your guilds server list"""
         abbr, bmID, waIP, waUsername, waPassword = [option['value'] for option in data['options']]
-        logindata = {'username': waUsername, 'password': waPassword}
+        authhash = '$sha1$' + hashlib.sha1((waPassword + waUsername).encode('utf-8')).hexdigest()
+        authcred = base64.b64encode(f'{waUsername}\n{authhash}'.encode('UTF-8')).decode('UTF-8')
 
         if abbr in self.app.active_guilds[guild_id]['servers']:
             return Response('Abbreviation already in use')
 
         waIP = waIP.strip(string.ascii_letters + '/:')
 
-        waIP_list = self.app.run_sql('SELECT SERVERS.WAIP FROM SERVERS')
-        print(waIP_list)
+        waIP_list = [IP[0] for IP in self.app.run_sql('SELECT SERVERS.WAIP FROM SERVERS')]
         if waIP in waIP_list:
             return Response('This server is already in your server list')
 
-        async def check_webadmin():
-            async with WebAdminSession(f'http://{waIP}') as webadmin:
-                try:
-                    await webadmin.login(logindata)
-                except IncorrectLogindata:
-                    return Response('Incorrect Logindata. To try again, restart the process')
+        # async def check_webadmin():
+        #     async with WebAdminSession(f'http://{waIP}') as webadmin:
+        #         try:
+        #             await webadmin.login(logindata)
+        #         except IncorrectLogindata:
+        #             return Response('Incorrect Logindata. To try again, restart the process')
                 # except:
                 #     return Response('WebAdmin_IP is invalid')
 
@@ -69,9 +71,7 @@ class GlobalCommands(Commands):
 
         server_name, server_IP = self.app.run_async(get_bminfo())
 
-        logindata.pop('token', None)
-
-        server_ID = self.app.run_sql("INSERT INTO SERVERS(Name, ServerIP, BMID, WAIP, Logindata) VALUES(%s, %s, %s, %s, %s)", server_name, server_IP, bmID, waIP, str(logindata), ret_ID=True)
+        server_ID = self.app.run_sql("INSERT INTO SERVERS(Name, ServerIP, BMID, WAIP, authcred) VALUES(%s, %s, %s, %s, %s)", server_name, server_IP, bmID, waIP, authcred, ret_ID=True)
 
         self.app.active_guilds[guild_id]['servers'][abbr] = server_ID
         self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
