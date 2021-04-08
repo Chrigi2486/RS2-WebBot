@@ -93,6 +93,7 @@ class GlobalCommands(Commands):
         if abbr not in self.app.active_guilds[guild_id]['servers']:
             return Response('Server not in your guilds server list')
         server_id = self.app.active_guilds[guild_id]['servers'][abbr]
+        self.app.active_guilds[guild_id]['servers'].pop(abbr)
         self.app.run_sql(f'DELETE FROM SERVERS WHERE SERVERS.ID = {server_id}')
         self.app.run_sql(f'DELETE FROM STATS WHERE STATS.SID = {server_id}')
         self.app.run_sql(f'DELETE FROM BANS WHERE BANS.SID = {server_id}')
