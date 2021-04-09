@@ -1,5 +1,6 @@
 import os
 import sys
+import asyncio
 import importlib
 import traceback
 from json import load, dump
@@ -28,7 +29,7 @@ class RS2WebBot(Flask):
 
     def __init__(self, *args, **kwargs):
 
-        self.client = Client()
+        self.client = Client(loop=asyncio.new_event_loop())
 
         self.run_async(self.client.login(self.BOT_TOKEN))
 
