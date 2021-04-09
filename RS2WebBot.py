@@ -21,7 +21,10 @@ class RS2WebBot(Flask):
     CLIENT_PUBLIC_KEY = os.getenv('CLIENT_PUBLIC_KEY')
     BOT_TOKEN = os.getenv('BOT_TOKEN')
     CLIENT_ID = os.getenv('CLIENT_ID')
-    MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
+    MYSQL_DATABASE = os.getenv('QOVERY_DATABASE_RS2DATABASE_NAME')
+    MYSQL_HOST = os.getenv('QOVERY_DATABASE_RS2DATABASE_CONNECTION_URI')
+    MYSQL_USERNAME = os.getenv('QOVERY_DATABASE_RS2DATABASE_USERNAME')
+    MYSQL_PASSWORD = os.getenv('QOVERY_DATABASE_RS2DATABASE_PASSWORD')
 
     def __init__(self, *args, **kwargs):
 
@@ -54,7 +57,7 @@ class RS2WebBot(Flask):
         return self.client.loop.create_task(command)
 
     def run_sql(self, command, *args, ret_ID=False, one=False):
-        database = mysql.connector.connect(user='RS2WebBot', password=self.MYSQL_PASSWORD, host='127.0.0.1', database='RS2Database')
+        database = mysql.connector.connect(user=self.MYSQL_USERNAME, password=self.MYSQL_PASSWORD, host=self.MYSQL_HOST, database=self.MYSQL_DATABASE)
         cursor = database.cursor()
         cursor.execute(command, args)
         if ret_ID:

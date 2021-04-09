@@ -3,6 +3,8 @@ application:
   name: "rs2-webbot"
   project: "RS2-WebBot"
   organization: "QoveryCommunity"
+  publicly_accessible: true
+  port: 6969
   storage:
   - name: "data"
     size: "10"
@@ -17,4 +19,4 @@ routers:
   routes:
   - application_name: "rs2-webbot"
     paths:
-    - "/*"
+    - "/"
