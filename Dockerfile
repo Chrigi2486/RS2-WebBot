@@ -1,5 +1,5 @@
 FROM python:3.6.8
-MAINTAINER Romaric Philogène <rphilogene@qovery.com>
+MAINTAINER Chrigi2486 <chrigi2486@gmail.com>
 
 EXPOSE 6969
 
