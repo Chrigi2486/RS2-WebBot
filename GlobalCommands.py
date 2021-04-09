@@ -29,7 +29,7 @@ class GlobalCommands(Commands):
 
         embed = discord.Embed(title='Server List')
         abbreviations = {v: k for k, v in self.app.active_guilds[guild_id]['servers'].items()}
-        servers = self.app.run_sql(f"SELECT SERVERS.ID, SERVERS.Name, SERVERS.ServerIP, SERVERS.BMID, SERVERS.WAIP FROM SERVERS WHERE SERVERS.ID IN {tuple(self.app.active_guilds[guild_id]['servers'].values())}")
+        servers = self.app.run_sql(f"SELECT SERVERS.ID, SERVERS.Name, SERVERS.ServerIP, SERVERS.BMID, SERVERS.WAIP FROM SERVERS WHERE SERVERS.ID IN ({','.join(self.app.active_guilds[guild_id]['servers'].values())})")
         for server in servers:
             server_id, server_name, server_IP, bmID, waIP = server
             value = f"Abbreviation: {abbreviations[server_id]}\nID: {server_id}\nIP: {server_IP}\nWebAdmin IP: {waIP}\nBattleMetrics ID: {bmID}"
