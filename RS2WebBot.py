@@ -29,7 +29,10 @@ class RS2WebBot(Flask):
 
     def __init__(self, *args, **kwargs):
 
-        self.client = Client(loop=asyncio.new_event_loop())
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+        self.client = Client(loop=loop)
 
         self.run_async(self.client.login(self.BOT_TOKEN))
 
