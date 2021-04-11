@@ -2,5 +2,4 @@ from RS2WebBot import app
 
 
 if __name__ == '__main__':
-    app.logger.info('Application Startup')
     app.run(host='0.0.0.0', port=6969)
