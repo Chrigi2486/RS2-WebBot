@@ -3,6 +3,7 @@ application:
   name: "rs2-webbot"
   project: "RS2-WebBot"
   organization: "QoveryCommunity"
+  cpu: 1
   publicly_accessible: true
   port: 6969
   storage:
