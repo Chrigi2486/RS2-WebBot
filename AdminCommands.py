@@ -53,7 +53,7 @@ class AdminCommands(Commands):
         post_requests = []
         for command in self.guild_command_blueprints:
             post_requests.append(self.app.create_guild_command(guild_ID, self.guild_command_blueprints[command]))
-        command_infos = self.app.run_async(asyncio.gather(*post_requests))
+        command_infos = self.app.run_async(asyncio.gather(*post_requests, loop=self.app.client.loop))
         for command in command_infos:
             self.app.active_guilds[guild_ID]['commands'][command['name']] = command['id']
         self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
@@ -137,3 +137,7 @@ class AdminCommands(Commands):
         command = data['options'][0]['value']
         result = self.app.run_sql(command)
         return Response(str(result))
+
+    @Decorators.command()
+    def dummy(self, data, **kwargs):
+        return Response(str([x[0] for x in os.walk('.')]))
