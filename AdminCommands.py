@@ -83,8 +83,9 @@ class AdminCommands(Commands):
         return Response(f'{self.app.run_async(self.app.client.fetch_guild(guild_ID)).name} - {guild_ID} has been revoked!')
 
     @Decorators.command('File_Path')
-    async def download(self, app, message, file_path):
+    async def download(self, data, **kwargs):
         """sends you the file at the given path"""
+        file_path = data['options'][0]['value']
         if not os.path.isfile(file_path):
             return Response('File not found!')
         elif '..' in file_path:
@@ -95,14 +96,15 @@ class AdminCommands(Commands):
             return Response(f'{file_path} has been sent')
 
     @Decorators.command('File_Path')
-    async def upload(self, app, message, file_path):
+    async def upload(self, data, channel_id, **kwargs):
         """saves the given file to the given path"""
+        file_path, message_id = [option['value'] for option in data['options']]
+        message = self.app.run_async(self.app.run_async(self.app.client.fetch_channel(channel_id)).fetch_message(message_id))
         if not message.attachments:
-            await message.channel.send('Attach the file to be uploaded')
-            return
-        await message.attachments[0].save(file_path)
-        await message.channel.send('File has been uploaded. Use +load to override the current Data')
+            return Response('Attach the file to be uploaded')
+        self.app.run_async(message.attachments[0].save(file_path))
         print(f'File was uploaded to {file_path}')
+        return Response('File has been uploaded. Use +load to override the current Data')
 
     @Decorators.command('File')
     def dump(self, data, **kwargs):

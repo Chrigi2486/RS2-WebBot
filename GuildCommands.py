@@ -8,18 +8,18 @@ from DiscordDataTypes import CommandOptionChoice as Choice
 
 
 @Decorators.guild_commands
-class GuildCommands(Commands):  # Make these commands a sub_command_group (type 2)
-                                # Instead of subcommands I can just make it an option server with choices of the servers
+class GuildCommands(Commands):
+
     def __init__(self, app):
         self.app = app
 
     def __str__(self):
-        return 'Premium Commands'
+        return 'Guild Commands'
 
-    @Decorators.guild_command(options=[Option("player", "The player to warn"), Option("warning", "The warning which should be given")])
-    def warn(self):
-        """Warn a player"""
-        pass
+    # @Decorators.guild_command(options=[Option("player", "The player to warn"), Option("warning", "The warning which should be given")])
+    # def warn(self):
+    #     """Warn a player"""
+    #     pass
 
     @Decorators.guild_command(options=[Option("player", "The player to kick"), Option("reason", "Reason to kick the player")])
     def kick(self, data, guild_id, **kwargs):
@@ -30,7 +30,7 @@ class GuildCommands(Commands):  # Make these commands a sub_command_group (type 
         server_id = self.app.active_guilds[guild_id]['servers'][server]
         player_name, platform_id = self.app.run_sql(f'SELECT PLAYERS.Name, PLAYERS.PlatformID FROM PLAYERS WHERE PLAYERS.ID = {player_db_id}')[0]
         webadminip, authcred = self.app.run_sql(f"SELECT SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}")[0]
-        self.app.run_async # FINISH HERE
+        self.app.run_async(self.app.client.http.request(WARoute('GET', webadminip, '/ServerAdmin/current/players?action=kick?playerid={player_id}?playerkey={player_key}?__Reason={reason}?NotifyPlayers=0?__IdType=0?__ExpUnit=Never', player_id=player_id, player_key=player_key, reason=reason), cookies={'Authcred': authcred}))
         return Response(f'{player_name} was kicked for {reason}\nPlatform ID: {platform_id}')
 
     @Decorators.guild_command(options=[Option("player", "The player to ban"), Option("reason", "Reason to ban the player")])

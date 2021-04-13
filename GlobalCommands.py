@@ -19,7 +19,7 @@ class GlobalCommands(Commands):
         self.guild_command_options = self.app.guild_commands.command_options
 
     def __str__(self):
-        return 'Basic Commands'
+        return 'Global Commands'
 
     @Decorators.command()
     def servers(self, guild_id, **kwargs):
@@ -57,10 +57,9 @@ class GlobalCommands(Commands):
             title = WAParser.parse_page_title(page)
             if title == 'Rising Storm 2: Vietnam WebAdmin - Login':
                 return Response('Incorrect Logindata')
-            elif title == 'Rising Storm 2: Vietnam WebAdmin - Current Game':
+            if title == 'Rising Storm 2: Vietnam WebAdmin - Current Game':
                 return
-            else:
-                return Response('Is this the right website?')
+            return Response('Is this the right website?')
 
         webadmin_check = None  # self.app.run_async(check_webadmin())
         if webadmin_check:
