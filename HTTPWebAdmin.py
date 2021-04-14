@@ -29,7 +29,7 @@ class Parser:
 
     @staticmethod
     def parse_page_title(resp):
-        return BeautifulSoup(resp, 'hmtl.parser').html.title.string
+        return BeautifulSoup(resp, 'html.parser').html.title.string
 
     @staticmethod
     def parse_current(resp):
