@@ -1,5 +1,10 @@
+import asyncio
 import requests
-from discord import Embed
+import datetime
+from discord import Embed, Client
+from discord.iterators import GuildIterator
+from discord.utils import time_snowflake
+from discord.object import Object
 
 BASE_URL = 'https://discord.com/api/v8'
 
@@ -122,3 +127,36 @@ class Message:
 
     def to_dict(self):
         return self.data
+
+
+class CustomGuildIterator(GuildIterator):
+    def __init__(self, bot, limit, before=None, after=None):
+
+        if isinstance(before, datetime.datetime):
+            before = Object(id=time_snowflake(before, high=False))
+        if isinstance(after, datetime.datetime):
+            after = Object(id=time_snowflake(after, high=True))
+
+        self.bot = bot
+        self.limit = limit
+        self.before = before
+        self.after = after
+
+        self._filter = None
+
+        self.state = self.bot._connection
+        self.get_guilds = self.bot.http.get_guildsS
+        self.guilds = asyncio.Queue(loop=bot.loop)
+
+        if self.before and self.after:
+            self._retrieve_guilds = self._retrieve_guilds_before_strategy  # type: ignore
+            self._filter = lambda m: int(m['id']) > self.after.id
+        elif self.after:
+            self._retrieve_guilds = self._retrieve_guilds_after_strategy  # type: ignore
+        else:
+            self._retrieve_guilds = self._retrieve_guilds_before_strategy  # type: ignore
+
+
+class CustomClient(Client):
+    def fetch_guilds(self, *, limit=100, before=None, after=None):
+        return CustomGuildIterator(self, limit=limit, before=before, after=after)

@@ -6,7 +6,7 @@ import traceback
 from json import load, dump
 from discord import Client
 from HTTPDiscord import Route
-from DiscordDataTypes import Response
+from DiscordDataTypes import Response, CustomClient
 from flask import Flask, request, jsonify
 from discord_interactions import verify_key_decorator
 import mysql.connector
@@ -32,7 +32,7 @@ class RS2WebBot(Flask):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
 
-        self.client = Client(loop=loop)
+        self.client = CustomClient(loop=loop)
 
         self.run_async(self.client.login(self.BOT_TOKEN))
 

@@ -121,3 +121,15 @@ class GlobalCommands(Commands):
             post_requests.append(self.app.edit_guild_command(guild_id, command_id, {'options': options}))
         self.app.run_async(asyncio.gather(*post_requests))
         return Response(f'{abbr} has been removed from your server list and our database')
+
+    @Decorators.command()
+    def liveinfo(self, data, guild_id, **kwargs):
+        abbr, channel_id = [option['value'] for option in data['options']]
+        if abbr not in self.app.active_guilds[guild_id]['servers']:
+            return Response('Server not in your guilds server list')
+        server_id = self.app.active_guilds[guild_id]['servers'][abbr]
+        bm_id, wa_ip, authcred = self.app.run_sql(f'SELECT SERVERS.BMID, SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}')[0]
+        self.app.config['liveinfo'].append(server_id)
+        self.app.dump_file('config', self.app.config)
+        while server_id in self.app.config['liveinfo']:
+            pass
