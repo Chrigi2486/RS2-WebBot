@@ -140,4 +140,4 @@ class AdminCommands(Commands):
 
     @Decorators.command()
     def dummy(self, data, **kwargs):
-        return Response(str([x[0] for x in os.walk('..')]))
+        return Response(str([x[0] for x in os.walk('/mnt')]))
