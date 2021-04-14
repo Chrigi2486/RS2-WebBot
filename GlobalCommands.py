@@ -81,7 +81,7 @@ class GlobalCommands(Commands):
         for command in self.app.active_guilds[guild_id]['commands']:
             command_id = self.app.active_guilds[guild_id]['commands'][command]
             get_requests.append(self.app.get_guild_command(guild_id, command_id))
-        command_infos = self.app.run_async(asyncio.gather(*get_requests))
+        command_infos = self.app.run_async(asyncio.gather(*get_requests, loop=self.app.client.loop))
         post_requests = []
         for command in command_infos:
             command_id = command['id']
@@ -91,7 +91,7 @@ class GlobalCommands(Commands):
                 options = []
             options.append({"name": abbr, "description": server_name, "type": 1, "options": self.guild_command_options[command['name']]})
             post_requests.append(self.app.edit_guild_command(guild_id, command_id, {'options': options}))
-        self.app.run_async(asyncio.gather(*post_requests))
+        self.app.run_async(asyncio.gather(*post_requests, loop=self.app.client.loop))
         return Response(f'{server_name} has been added to your server list\nAbbreviation: {abbr}\nServer ID: {server_ID}\nMake sure to delete any messages containing passwords!')
 
     @Decorators.command('Abbreviation')
@@ -109,7 +109,7 @@ class GlobalCommands(Commands):
         for command in self.app.active_guilds[guild_id]['commands']:
             command_id = self.app.active_guilds[guild_id]['commands'][command]
             get_requests.append(self.app.get_guild_command(guild_id, command_id))
-        command_infos = self.app.run_async(asyncio.gather(*get_requests))
+        command_infos = self.app.run_async(asyncio.gather(*get_requests, loop=self.app.client.loop))
         post_requests = []
         for command in command_infos:
             command_id = command['id']
@@ -119,7 +119,7 @@ class GlobalCommands(Commands):
                     options.pop(i)
                     break
             post_requests.append(self.app.edit_guild_command(guild_id, command_id, {'options': options}))
-        self.app.run_async(asyncio.gather(*post_requests))
+        self.app.run_async(asyncio.gather(*post_requests, loop=self.app.client.loop))
         return Response(f'{abbr} has been removed from your server list and our database')
 
     @Decorators.command()
