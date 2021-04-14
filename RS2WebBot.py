@@ -46,10 +46,10 @@ class RS2WebBot(Flask):
         self.update_commands(True, True, True)
 
         check_for_file('./config.json')
-        check_for_file('./data/active_guilds.json')
-
         self.bot_config = self.load_file('./config.json')
-        self.active_guilds = self.load_file('./data/active_guilds.json')
+
+        check_for_file(self.bot_config['paths']['active_guilds'])
+        self.active_guilds = self.load_file(self.bot_config['paths']['active_guilds'])
 
         super().__init__(*args, **kwargs)
 

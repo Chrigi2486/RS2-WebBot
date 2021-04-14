@@ -56,8 +56,7 @@ class AdminCommands(Commands):
         command_infos = self.app.run_async(asyncio.gather(*post_requests, loop=self.app.client.loop))
         for command in command_infos:
             self.app.active_guilds[guild_ID]['commands'][command['name']] = command['id']
-        self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
-        self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
+        self.app.dump_file(self.app.bot_config['paths']['active_guilds'], self.app.active_guilds)
         return Response(f"{guild.name} - {guild_ID} has been validated!")
 
     @Decorators.command('Guild_ID')
@@ -79,7 +78,7 @@ class AdminCommands(Commands):
             return Response('Guild already revoked')
         self.app.active_guilds[guild_ID]['validated'] = False
         self.app.active_guilds[guild_ID]['premium'] = False
-        self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
+        self.app.dump_file(self.app.bot_config['paths']['active_guilds'], self.app.active_guilds)
         return Response(f'{self.app.run_async(self.app.client.fetch_guild(guild_ID)).name} - {guild_ID} has been revoked!')
 
     @Decorators.command('File_Path')
@@ -111,9 +110,9 @@ class AdminCommands(Commands):
         """dumps the given file"""
         file = data['options'][0]['value']
         if file == 'active_guilds':
-            self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
+            self.app.dump_file(self.app.bot_config['paths']['active_guilds'], self.app.active_guilds)
         elif file == 'config':
-            self.app.dump_file('./config.json', self.app.config)
+            self.app.dump_file('./config.json', self.app.bot_config)
         else:
             return Response('File wasn\'t found')
         print(f'{file} was dumped')
@@ -124,9 +123,9 @@ class AdminCommands(Commands):
         """loads the given file"""
         file = data['options'][0]['value']
         if file == 'active_guilds':
-            self.app.active_guilds = self.app.load_file('./data/active_guilds.json')
+            self.app.active_guilds = self.app.load_file(self.app.bot_config['paths']['active_guilds'])
         elif file == 'config':
-            self.app.config = self.app.load_file('./config.json')
+            self.app.bot_config = self.app.load_file('./config.json')
         else:
             return Response('File wasn\'t found')
         print(f'{file} was loaded')

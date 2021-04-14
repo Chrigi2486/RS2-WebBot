@@ -76,7 +76,7 @@ class GlobalCommands(Commands):
         server_ID = self.app.run_sql("INSERT INTO SERVERS(Name, ServerIP, BMID, WAIP, authcred) VALUES(%s, %s, %s, %s, %s)", server_name, server_IP, bmID, waIP, authcred, ret_ID=True)
 
         self.app.active_guilds[guild_id]['servers'][abbr] = server_ID
-        self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
+        self.app.dump_file(self.app.bot_config['paths']['active_guilds'], self.app.active_guilds)
         get_requests = []
         for command in self.app.active_guilds[guild_id]['commands']:
             command_id = self.app.active_guilds[guild_id]['commands'][command]
@@ -101,7 +101,7 @@ class GlobalCommands(Commands):
         if abbr not in self.app.active_guilds[guild_id]['servers']:
             return Response('Server not in your guilds server list')
         server_id = self.app.active_guilds[guild_id]['servers'].pop(abbr)
-        self.app.dump_file('./data/active_guilds.json', self.app.active_guilds)
+        self.app.dump_file(self.app.bot_config['paths']['active_guilds'], self.app.active_guilds)
         self.app.run_sql(f'DELETE FROM SERVERS WHERE SERVERS.ID = {server_id}')
         self.app.run_sql(f'DELETE FROM STATS WHERE STATS.SID = {server_id}')
         self.app.run_sql(f'DELETE FROM BANS WHERE BANS.SID = {server_id}')
