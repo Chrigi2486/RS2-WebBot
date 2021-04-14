@@ -145,7 +145,7 @@ class CustomGuildIterator(GuildIterator):
         self._filter = None
 
         self.state = self.bot._connection
-        self.get_guilds = self.bot.http.get_guildsS
+        self.get_guilds = self.bot.http.get_guilds
         self.guilds = asyncio.Queue(loop=bot.loop)
 
         if self.before and self.after:
