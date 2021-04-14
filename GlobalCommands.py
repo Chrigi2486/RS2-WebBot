@@ -61,7 +61,7 @@ class GlobalCommands(Commands):
                 return
             return Response('Is this the right website?')
 
-        webadmin_check = None  # self.app.run_async(check_webadmin())
+        webadmin_check = self.app.run_async(check_webadmin())
         if webadmin_check:
             return webadmin_check
 
