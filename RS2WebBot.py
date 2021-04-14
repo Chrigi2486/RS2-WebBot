@@ -4,7 +4,6 @@ import asyncio
 import importlib
 import traceback
 from json import load, dump
-from discord import Client
 from HTTPDiscord import Route
 from DiscordDataTypes import Response, CustomClient
 from flask import Flask, request, jsonify
