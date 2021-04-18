@@ -4,9 +4,10 @@ import asyncio
 import importlib
 import traceback
 from json import load, dump
+from discord import Client
 from HTTPDiscord import Route
-from DiscordDataTypes import Response, CustomClient
-from flask import Flask, request, jsonify
+from DiscordDataTypes import Response
+from quart import Quart, request, jsonify
 from discord_interactions import verify_key_decorator
 import mysql.connector
 import GlobalCommands
@@ -16,7 +17,7 @@ import AdminCommands
 sys.path.insert(0, os.path.dirname(__file__))
 
 
-class RS2WebBot(Flask):
+class RS2WebBot(Quart):
 
     CLIENT_PUBLIC_KEY = os.getenv('CLIENT_PUBLIC_KEY')
     BOT_TOKEN = os.getenv('BOT_TOKEN')
@@ -28,12 +29,9 @@ class RS2WebBot(Flask):
 
     def __init__(self, *args, **kwargs):
 
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
+        self.client = Client()
 
-        self.client = CustomClient(loop=loop)
-
-        self.run_async(self.client.login(self.BOT_TOKEN))
+        # self.run_async(self.client.login(self.BOT_TOKEN))
 
         def check_for_file(path, l=False):
             if not os.path.isfile(path):
@@ -73,37 +71,37 @@ class RS2WebBot(Flask):
         database.close()
         return result
 
-    def check_command(self, data):
+    async def check_command(self, data):
         command = data['data']['name']
         if command in self.global_commands:
-            return self.check_user(self.global_commands, data)
+            return await self.check_user(self.global_commands, data)
 
         if command in self.guild_commands:
             if self.active_guilds[data['guild_id']]['premium']:
-                return self.check_user(self.guild_commands, data)
+                return await self.check_user(self.guild_commands, data)
             return Response('Upgrade to Premium to unlock these commands!')
         if command in self.admin_commands:
-            return self.check_user(self.admin_commands, data, admin=True)
+            return await self.check_user(self.admin_commands, data, admin=True)
         return Response(f'Command {command} not found')
 
-    def check_user(self, commands, data, admin=False):
+    async def check_user(self, commands, data, admin=False):
         if admin:
             if data['member']['user']['id'] in self.bot_config['validators']:
-                return self.run_command(commands, data)
+                return await self.run_command(commands, data)
             return Response('You aren\'t authorised to use this command!')
 
         guild_id = data['guild_id']
         if guild_id in self.active_guilds and self.active_guilds[guild_id]['validated']:
             if self.active_guilds[data['guild_id']]['admin'] in data['member']['roles']:
-                return self.run_command(commands, data)
+                return await self.run_command(commands, data)
             return Response('You aren\'t authorised to use this command!')
         return Response('This Discord-Server must be validated by -[FGC]- before the bot can be used!')
 
-    def run_command(self, commands, data):
+    async def run_command(self, commands, data):
         print(data)
         command = data['data']['name']
         try:
-            return commands[command](commands, **data)
+            return await commands[command](commands, **data)
         except Exception as e:
             self.logger.error(traceback.format_exc())
             return Response(f'An Error occured! Please contact a member of the -[FGC]- Team and provide the error message below :)\n**Command:** {command}\n**Error:** {e}')
@@ -151,15 +149,15 @@ app = RS2WebBot(__name__)
 
 
 @app.route('/', methods=['GET'])
-def status():
+async def status():
     return 'RS2-Web-Bot up and running'
 
 
 @app.route('/', methods=['POST'])
 @verify_key_decorator(app.CLIENT_PUBLIC_KEY)
-def handle_command():
+async def handle_command():
     if request.json['type'] == 2:
-        return jsonify((app.check_command(request.json)).to_dict())
+        return jsonify((await app.check_command(request.json)).to_dict())
 
 
 if __name__ == '__main__':

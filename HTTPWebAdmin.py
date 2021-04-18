@@ -42,15 +42,14 @@ class Parser:
         scorelist = html.select('#players > tbody')[0]
         scorelist = None if scorelist.find('em') else scorelist
         ranked = not ranked == 'No'
-        winner = 'North' if north[4].string == '1' else 'South' if south[4].string == '1' else None
-        teamscores = {'North': int(north[5].string), 'South': int(south[5].string)}
+        teams = {'North': {'size': int(north[2].string), 'attacking': (north[3].string == 'Yes'), 'won': int(north[4].string), 'score': int(north[5].string)}, 'South': {'size': int(south[2].string), 'attacking': (south[3].string == 'Yes'), 'won': int(south[4].string), 'score': int(south[5].string)}}
 
         def parse_players(player):
             return player.find_all('td')[1].string, {'score': int(player.find_all('td')[3].string), 'kills': int(player.find_all('td')[4].string)}
 
         playerstats = ({} if not scorelist else {parse_players(player)[0]: parse_players(player)[1] for player in scorelist.find_all('tr')})
 
-        return {'players': players, 'map': currentmap, 'ranked': ranked, 'winner': winner, 'playerstats': playerstats, 'teamscores': teamscores}
+        return {'players': players, 'map': currentmap, 'ranked': ranked, 'playerstats': playerstats, 'teams': teams}
 
     @staticmethod
     def parse_player_list(resp):
