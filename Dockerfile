@@ -1,4 +1,4 @@
-FROM python:3.6.8
+FROM python:3.7.10
 MAINTAINER Chrigi2486 <chrigi2486@gmail.com>
 
 EXPOSE 6969
