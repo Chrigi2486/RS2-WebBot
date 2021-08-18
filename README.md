@@ -1,2 +1,2 @@
 # RS2-WebBot
-RS2-Discord-Bot without using Discord.py 
+RS2-Discord-Bot using the new slash commands
