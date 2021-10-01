@@ -140,5 +140,14 @@ class AdminCommands(Commands):
         return Response(str(result))
 
     @Decorators.command()
+    async def restart(self, data, **kwargs):
+        if not self.app.server_tasks:
+            return Response("This should only be used if the bot has been restarted")
+        for id in self.app.bot_config['liveinfo']:
+            task = self.app.add_async(self.app.live_info(id))
+            self.app.server_tasks.append(task)
+        return Response()
+
+    @Decorators.command()
     async def dummy(self, data, **kwargs):
         return Response(str([x[0] for x in os.walk('/mnt')]))

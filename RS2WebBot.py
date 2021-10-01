@@ -6,6 +6,8 @@ import traceback
 from json import load, dump
 from discord import Client
 from HTTPDiscord import Route
+from HTTPWebAdmin import Route as WARoute
+from HTTPWebAdmin import Parser as WAParser
 from DiscordDataTypes import Response
 from quart import Quart, request, jsonify
 from discord_interactions import verify_key_decorator
@@ -48,6 +50,8 @@ class RS2WebBot(Quart):
 
         check_for_file(self.bot_config['paths']['active_guilds'])
         self.active_guilds = self.load_file(self.bot_config['paths']['active_guilds'])
+
+        self.server_tasks = []
 
         super().__init__(*args, **kwargs)
 
@@ -143,6 +147,16 @@ class RS2WebBot(Quart):
 
     def edit_guild_command(self, guild_id, command_id, payload):
         return self.client.http.request(Route('PATCH', f'/applications/{self.CLIENT_ID}/guilds/{guild_id}/commands/{command_id}'), json=payload)
+
+    async def live_info(self, server_id, channel_id):
+        bm_id, wa_ip, authcred = self.app.run_sql(f'SELECT SERVERS.BMID, SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}')[0]
+        while server_id in self.bot_config['liveinfo']:
+            pass
+
+    async def live_chat(self, server_id, channel_id):
+        wa_ip, authcred = self.app.run_sql(f'SELECT SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}')[0]
+        while server_id in self.bot_config['livechat']:
+            pass
 
 
 app = RS2WebBot(__name__)

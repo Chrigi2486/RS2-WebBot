@@ -22,7 +22,7 @@ class GlobalCommands(Commands):
         return 'Global Commands'
 
     @Decorators.command()
-    def servers(self, guild_id, **kwargs):
+    async def servers(self, guild_id, **kwargs):
         """lists the servers in your guilds server list"""
         if not self.app.active_guilds[guild_id]['servers']:
             return Response('Your server list is empty')
@@ -37,7 +37,7 @@ class GlobalCommands(Commands):
         return Response(embed=embed)
 
     @Decorators.command('Abbreviation', 'BattleMetrics_ID', 'WebAdmin_IP:PORT')
-    def addserver(self, guild_id, data, **kwargs):
+    async def addserver(self, guild_id, data, **kwargs):
         """adds a server to your guilds server list"""
         abbr, bmID, waIP, waUsername, waPassword = [option['value'] for option in data['options']]
         authhash = '$sha1$' + hashlib.sha1((waPassword + waUsername).encode('utf-8')).hexdigest()
@@ -59,9 +59,9 @@ class GlobalCommands(Commands):
                 return Response('Incorrect Logindata')
             if title == 'Rising Storm 2: Vietnam WebAdmin - Current Game':
                 return
-            return Response('Is this the right website?')
+            return Response('Invalid URL or PORT')
 
-        webadmin_check = self.app.run_async(check_webadmin())
+        webadmin_check = await check_webadmin()
         if webadmin_check:
             return webadmin_check
 
@@ -71,7 +71,7 @@ class GlobalCommands(Commands):
             server_IP = f"{info['data']['attributes']['ip']}:{info['data']['attributes']['port']}"
             return server_name, server_IP
 
-        server_name, server_IP = self.app.run_async(get_bminfo())
+        server_name, server_IP = await get_bminfo()
 
         server_ID = self.app.run_sql("INSERT INTO SERVERS(Name, ServerIP, BMID, WAIP, authcred) VALUES(%s, %s, %s, %s, %s)", server_name, server_IP, bmID, waIP, authcred, ret_ID=True)
 
@@ -81,7 +81,7 @@ class GlobalCommands(Commands):
         for command in self.app.active_guilds[guild_id]['commands']:
             command_id = self.app.active_guilds[guild_id]['commands'][command]
             get_requests.append(self.app.get_guild_command(guild_id, command_id))
-        command_infos = self.app.run_async(asyncio.gather(*get_requests, loop=self.app.client.loop))
+        command_infos = await asyncio.gather(*get_requests, loop=self.app.client.loop)
         post_requests = []
         for command in command_infos:
             command_id = command['id']
@@ -91,11 +91,11 @@ class GlobalCommands(Commands):
                 options = []
             options.append({"name": abbr, "description": server_name, "type": 1, "options": self.guild_command_options[command['name']]})
             post_requests.append(self.app.edit_guild_command(guild_id, command_id, {'options': options}))
-        self.app.run_async(asyncio.gather(*post_requests, loop=self.app.client.loop))
+        await asyncio.gather(*post_requests, loop=self.app.client.loop)
         return Response(f'{server_name} has been added to your server list\nAbbreviation: {abbr}\nServer ID: {server_ID}\nMake sure to delete any messages containing passwords!')
 
     @Decorators.command('Abbreviation')
-    def removeserver(self, guild_id, data, **kwargs):
+    async def removeserver(self, guild_id, data, **kwargs):
         """removes the given server from your guilds server list"""
         abbr = data['options'][0]['value']
         if abbr not in self.app.active_guilds[guild_id]['servers']:
@@ -109,7 +109,7 @@ class GlobalCommands(Commands):
         for command in self.app.active_guilds[guild_id]['commands']:
             command_id = self.app.active_guilds[guild_id]['commands'][command]
             get_requests.append(self.app.get_guild_command(guild_id, command_id))
-        command_infos = self.app.run_async(asyncio.gather(*get_requests, loop=self.app.client.loop))
+        command_infos = await asyncio.gather(*get_requests, loop=self.app.client.loop)
         post_requests = []
         for command in command_infos:
             command_id = command['id']
@@ -119,17 +119,17 @@ class GlobalCommands(Commands):
                     options.pop(i)
                     break
             post_requests.append(self.app.edit_guild_command(guild_id, command_id, {'options': options}))
-        self.app.run_async(asyncio.gather(*post_requests, loop=self.app.client.loop))
+        await asyncio.gather(*post_requests, loop=self.app.client.loop)
         return Response(f'{abbr} has been removed from your server list and our database')
 
     @Decorators.command()
-    def liveinfo(self, data, guild_id, **kwargs):
+    async def startinfo(self, data, guild_id, **kwargs):
         abbr, channel_id = [option['value'] for option in data['options']]
         if abbr not in self.app.active_guilds[guild_id]['servers']:
             return Response('Server not in your guilds server list')
         server_id = self.app.active_guilds[guild_id]['servers'][abbr]
-        bm_id, wa_ip, authcred = self.app.run_sql(f'SELECT SERVERS.BMID, SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}')[0]
-        self.app.config['liveinfo'].append(server_id)
-        self.app.dump_file('config', self.app.config)
-        while server_id in self.app.config['liveinfo']:
-            pass
+        self.app.bot_config['liveinfo'].append(server_id)
+        self.app.dump_file('config', self.app.bot_config)
+        task = self.app.add_async(self.app.live_info(server_id, channel_id))
+        self.app.server_tasks.append(task)
+        return Response(f"Live info for {abbr} will start momentarily")
