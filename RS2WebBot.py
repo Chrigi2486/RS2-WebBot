@@ -4,7 +4,7 @@ import asyncio
 import importlib
 import traceback
 from json import load, dump
-from discord import Client
+from discord import Client, Embed
 from HTTPDiscord import Route
 from HTTPWebAdmin import Route as WARoute
 from HTTPWebAdmin import Parser as WAParser
@@ -33,7 +33,7 @@ class RS2WebBot(Quart):
 
         self.client = Client()
 
-        # self.run_async(self.client.login(self.BOT_TOKEN))
+        self.run_async(self.client.login(self.BOT_TOKEN))
 
         def check_for_file(path, l=False):
             if not os.path.isfile(path):
@@ -150,13 +150,30 @@ class RS2WebBot(Quart):
 
     async def live_info(self, server_id, channel_id):
         bm_id, wa_ip, authcred = self.app.run_sql(f'SELECT SERVERS.BMID, SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}')[0]
+        cookies = {'authcred': authcred}
+        message = await (self.client.get_channel(channel_id)).send('Placeholder for live info')
         while server_id in self.bot_config['liveinfo']:
-            pass
+            current_response = self.client.http.request(WARoute('GET', wa_ip, '/ServerAdmin/current'), cookies=cookies)
+            current = WAParser.parse_current(current_response)
+            content = '------------------------------------------------------\nName: {name}\nPlayers: {players}/64\nMap: {map}\n------------------------------------------------------'
+            content = message.format(**current)
+            await message.edit(content=content)
+            await asyncio.sleep(60)
 
     async def live_chat(self, server_id, channel_id):
         wa_ip, authcred = self.app.run_sql(f'SELECT SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}')[0]
+        channel = self.client.get_channel(channel_id)
+        cookies = {'authcred': authcred}
         while server_id in self.bot_config['livechat']:
-            pass
+            chat_response = await self.client.http.request(WARoute('GET', wa_ip, '/ServerAdmin/current/chat/data'), cookies=cookies)
+            messages = WAParser.parse_chat(chat_response)
+            for message in messages:
+                embed = Embed(
+                    description=f"{message['team']} **{message['username']}**: {message['content']}",
+                    color=message['color']
+                    )
+                await channel.send(embed=embed)
+            await asyncio.sleep(5)
 
 
 app = RS2WebBot(__name__)

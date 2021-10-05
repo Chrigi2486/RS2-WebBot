@@ -34,6 +34,7 @@ class Parser:
     @staticmethod
     def parse_current(resp):
         html = BeautifulSoup(resp, 'html.parser')
+        name = html.select('#currentGame > dd:nth-child(2)').string
         players = html.select('#currentRules > dd:nth-child(6)')[0].string.split(' ')[0]
         currentmap = html.select('#currentGame > dd:nth-child(7) > code')[0].string
         ranked = html.find(class_='ranked').string.split(' ')[1]
@@ -49,7 +50,7 @@ class Parser:
 
         playerstats = ({} if not scorelist else {parse_players(player)[0]: parse_players(player)[1] for player in scorelist.find_all('tr')})
 
-        return {'players': players, 'map': currentmap, 'ranked': ranked, 'playerstats': playerstats, 'teams': teams}
+        return {'name': name, 'players': players, 'map': currentmap, 'ranked': ranked, 'playerstats': playerstats, 'teams': teams}
 
     @staticmethod
     def parse_player_list(resp):
@@ -65,7 +66,7 @@ class Parser:
                 'uniqueID': playerinfo.find_all('td')[4].string
             }
             players.append(player)
-        return player
+        return players
 
     @staticmethod
     def parse_chat(resp):
@@ -74,6 +75,7 @@ class Parser:
         for chatmessage in chatmessages:
             message = {
                 'name': chatmessage.find(class_='username'),
+                'content': chatmessage.find(class_='message').string,  # TODO: Add @ADMIN
                 'team': chatmessage.find(class_='teamnotice').string if chatmessage.find(class_='teamnotice') else '',
                 'color': int(chatmessage.find(class_='teamcolor')['style'].split(' ')[1].replace(';', '').replace('#', '0x'), 0) if chatmessage.find(class_='teamcolor') else 0x9400D3
             }
