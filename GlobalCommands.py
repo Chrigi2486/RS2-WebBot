@@ -130,6 +130,46 @@ class GlobalCommands(Commands):
         server_id = self.app.active_guilds[guild_id]['servers'][abbr]
         self.app.bot_config['liveinfo'].append(server_id)
         self.app.dump_file('config', self.app.bot_config)
-        task = self.app.add_async(self.app.live_info(server_id, channel_id))
-        self.app.server_tasks.append(task)
+        task = self.app.add_async(self.live_info(server_id, channel_id))
+        self.app.info_tasks.append(task)
         return Response(f"Live info for {abbr} will start momentarily")
+
+    @Decorators.command()
+    async def startchat(self, data, guild_id, **kwargs):
+        abbr, channel_id = [option['value'] for option in data['options']]
+        if abbr not in self.app.active_guilds[guild_id]['servers']:
+            return Response('Server not in your guilds server list')
+        server_id = self.app.active_guilds[guild_id]['servers'][abbr]
+        self.app.bot_config['livechat'].append(server_id)
+        self.app.dump_file('config', self.app.bot_config)
+        task = self.app.add_async(self.live_chat(server_id, channel_id))
+        self.app.chat_tasks.append(task)
+        return Response(f"Live info for {abbr} will start momentarily")
+
+    async def live_info(self, server_id, channel_id):
+        bm_id, wa_ip, authcred = self.app.run_sql(f'SELECT SERVERS.BMID, SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}')[0]
+        cookies = {'authcred': authcred}
+        message = await (self.app.client.get_channel(channel_id)).send('Placeholder for live info')
+        while server_id in self.app.bot_config['liveinfo']:
+            current_response = self.app.client.http.request(WARoute('GET', wa_ip, '/ServerAdmin/current'), cookies=cookies)
+            current = WAParser.parse_current(current_response)
+            content = '------------------------------------------------------\nName: {name}\nPlayers: {players}/64\nMap: {map}\n------------------------------------------------------'
+            content = message.format(**current)
+            await message.edit(content=content)
+            await asyncio.sleep(60)
+
+    async def live_chat(self, server_id, channel_id):
+        wa_ip, authcred = self.app.run_sql(f'SELECT SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}')[0]
+        channel = self.app.client.get_channel(channel_id)
+        cookies = {'authcred': authcred}
+        while server_id in self.app.bot_config['livechat']:
+            chat_response = await self.app.client.http.request(WARoute('GET', wa_ip, '/ServerAdmin/current/chat/data'), cookies=cookies)
+            messages = WAParser.parse_chat(chat_response)
+            for message in messages:
+                embed = discord.Embed(
+                    description=f"{message['team']} **{message['username']}**: {message['content']}",
+                    color=message['color']
+                    )
+                await channel.send(embed=embed)
+            await asyncio.sleep(5)
+

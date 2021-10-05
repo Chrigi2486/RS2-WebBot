@@ -4,10 +4,8 @@ import asyncio
 import importlib
 import traceback
 from json import load, dump
-from discord import Client, Embed
+from discord import Client
 from HTTPDiscord import Route
-from HTTPWebAdmin import Route as WARoute
-from HTTPWebAdmin import Parser as WAParser
 from DiscordDataTypes import Response
 from quart import Quart, request, jsonify
 from discord_interactions import verify_key_decorator
@@ -51,7 +49,8 @@ class RS2WebBot(Quart):
         check_for_file(self.bot_config['paths']['active_guilds'])
         self.active_guilds = self.load_file(self.bot_config['paths']['active_guilds'])
 
-        self.server_tasks = []
+        self.info_tasks = []
+        self.chat_tasks = []
 
         super().__init__(*args, **kwargs)
 
@@ -147,33 +146,6 @@ class RS2WebBot(Quart):
 
     def edit_guild_command(self, guild_id, command_id, payload):
         return self.client.http.request(Route('PATCH', f'/applications/{self.CLIENT_ID}/guilds/{guild_id}/commands/{command_id}'), json=payload)
-
-    async def live_info(self, server_id, channel_id):
-        bm_id, wa_ip, authcred = self.app.run_sql(f'SELECT SERVERS.BMID, SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}')[0]
-        cookies = {'authcred': authcred}
-        message = await (self.client.get_channel(channel_id)).send('Placeholder for live info')
-        while server_id in self.bot_config['liveinfo']:
-            current_response = self.client.http.request(WARoute('GET', wa_ip, '/ServerAdmin/current'), cookies=cookies)
-            current = WAParser.parse_current(current_response)
-            content = '------------------------------------------------------\nName: {name}\nPlayers: {players}/64\nMap: {map}\n------------------------------------------------------'
-            content = message.format(**current)
-            await message.edit(content=content)
-            await asyncio.sleep(60)
-
-    async def live_chat(self, server_id, channel_id):
-        wa_ip, authcred = self.app.run_sql(f'SELECT SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}')[0]
-        channel = self.client.get_channel(channel_id)
-        cookies = {'authcred': authcred}
-        while server_id in self.bot_config['livechat']:
-            chat_response = await self.client.http.request(WARoute('GET', wa_ip, '/ServerAdmin/current/chat/data'), cookies=cookies)
-            messages = WAParser.parse_chat(chat_response)
-            for message in messages:
-                embed = Embed(
-                    description=f"{message['team']} **{message['username']}**: {message['content']}",
-                    color=message['color']
-                    )
-                await channel.send(embed=embed)
-            await asyncio.sleep(5)
 
 
 app = RS2WebBot(__name__)
