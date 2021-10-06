@@ -1,1 +1,1 @@
-{"validators": ["254657351095681024", "252571118542651393", "456232565846835201"], "paths": {"active_guilds": "/mnt/data/active_guilds.json", "config": "./config.json"}}
+{"validators": ["254657351095681024", "252571118542651393", "456232565846835201"], "paths": {"active_guilds": "./active_guilds.json", "config": "./config.json"}}
