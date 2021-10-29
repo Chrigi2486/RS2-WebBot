@@ -7,7 +7,7 @@ from discord import Client
 from HTTPDiscord import Route
 from DiscordDataTypes import Response
 from quart import Quart, request, jsonify
-from discord_interactions import verify_key_decorator
+from discord_interactions import verify_key
 import mysql.connector
 import GlobalCommands
 import GuildCommands
@@ -158,11 +158,19 @@ async def status():
 
 
 @app.route('/', methods=['POST'])
-@verify_key_decorator(app.CLIENT_PUBLIC_KEY)
 async def handle_command():
     print('Handle request: ', request.json)
-    if request.json['type'] == 2:
+    signature = request.headers.get('X-Signature-Ed25519')
+    timestamp = request.headers.get('X-Signature-Timestamp')
+    if signature is None or timestamp is None or not verify_key(request.data, signature, timestamp, app.CLIENT_PUBLIC_KEY):
+        return 'Bad request signature', 401
+
+    # Automatically respond to pings
+    if request.json and request.json.get('type') == 1:
+        return jsonify({'type': 1})
+    if request.json.get('type') == 2:
         return jsonify((await app.check_command(request.json)).to_dict())
+    return 'Dunno mate'
 
 
 if __name__ == '__main__':
