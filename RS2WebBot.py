@@ -160,9 +160,12 @@ async def status():
 @app.route('/', methods=['POST'])
 async def handle_command():
     request_json = await request.get_json()
-    print('Handle request: ', request.json)
+    print('Handle request: ', request_json)
     signature = request.headers.get('X-Signature-Ed25519')
+    print(signature)
     timestamp = request.headers.get('X-Signature-Timestamp')
+    print(timestamp)
+    print(await request.get_data())
     if signature is None or timestamp is None or not verify_key(await request.get_data(), signature, timestamp, app.CLIENT_PUBLIC_KEY):
         return 'Bad request signature', 401
 
