@@ -2,11 +2,11 @@ import os
 import sys
 import importlib
 import traceback
-from json import load, dump, dumps
+from json import load, dump
 from discord import Client
 from HTTPDiscord import Route
 from DiscordDataTypes import Response
-from quart import Quart, request
+from quart import Quart, request, jsonify
 from discord_interactions import verify_key_decorator
 import mysql.connector
 import GlobalCommands
@@ -27,6 +27,8 @@ class RS2WebBot(Quart):
     MYSQL_PASSWORD = os.getenv('QOVERY_DATABASE_RS2DATABASE_PASSWORD') if os.getenv('QOVERY_DATABASE_RS2DATABASE_PASSWORD') else os.getenv('MYSQL_PASSWORD')
 
     def __init__(self, *args, **kwargs):
+
+        print('Startup')
 
         self.client = Client()
 
@@ -158,8 +160,9 @@ async def status():
 @app.route('/', methods=['POST'])
 @verify_key_decorator(app.CLIENT_PUBLIC_KEY)
 async def handle_command():
+    print('Handle request: ', request.json)
     if request.json['type'] == 2:
-        return app.Response(dumps((await app.check_command(request.json)).to_dict()), mimetype='application/json')
+        return jsonify((await app.check_command(request.json)).to_dict())
 
 
 if __name__ == '__main__':
