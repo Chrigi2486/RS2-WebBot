@@ -167,7 +167,7 @@ async def handle_command():
     print(timestamp)
     request_data = await request.get_data()
     print(request_data)
-    if signature is None or timestamp is None or not verify_key(await request.get_data(), signature, timestamp, app.CLIENT_PUBLIC_KEY):
+    if signature is None or timestamp is None or not verify_key(request_data, signature, timestamp, app.CLIENT_PUBLIC_KEY):
         return 'Bad request signature', 401
 
     # Automatically respond to pings
