@@ -1,6 +1,5 @@
 import os
 import sys
-import asyncio
 import importlib
 import traceback
 from json import load, dump
@@ -33,11 +32,11 @@ class RS2WebBot(Quart):
 
         self.run_async(self.client.login(self.BOT_TOKEN))
 
-        def check_for_file(path, l=False):
+        def check_for_file(path, list_=False):
             if not os.path.isfile(path):
                 os.makedirs(os.path.dirname(path), exist_ok=True)
                 with open(path, 'w') as wfile:
-                    wfile.write(('[]' if l else'{}'))
+                    wfile.write(('[]' if list_ else'{}'))
                 return False
             return True
 

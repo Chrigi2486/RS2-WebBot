@@ -172,4 +172,3 @@ class GlobalCommands(Commands):
                     )
                 await channel.send(embed=embed)
             await asyncio.sleep(5)
-
