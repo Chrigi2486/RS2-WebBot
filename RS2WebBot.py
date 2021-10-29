@@ -2,11 +2,11 @@ import os
 import sys
 import importlib
 import traceback
-from json import load, dump
+from json import load, dump, dumps
 from discord import Client
 from HTTPDiscord import Route
 from DiscordDataTypes import Response
-from quart import Quart, request, jsonify
+from quart import Quart, request
 from discord_interactions import verify_key_decorator
 import mysql.connector
 import GlobalCommands
@@ -159,7 +159,7 @@ async def status():
 @verify_key_decorator(app.CLIENT_PUBLIC_KEY)
 async def handle_command():
     if request.json['type'] == 2:
-        return jsonify((await app.check_command(request.json)).to_dict())
+        return app.Response(dumps((await app.check_command(request.json)).to_dict()), mimetype='application/json')
 
 
 if __name__ == '__main__':
