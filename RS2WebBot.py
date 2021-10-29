@@ -159,19 +159,18 @@ async def status():
 
 @app.route('/', methods=['POST'])
 async def handle_command():
-    await request.get_data()
+    request_json = await request.get_json()
     print('Handle request: ', request.json)
     signature = request.headers.get('X-Signature-Ed25519')
     timestamp = request.headers.get('X-Signature-Timestamp')
-    if signature is None or timestamp is None or not verify_key(request.data, signature, timestamp, app.CLIENT_PUBLIC_KEY):
+    if signature is None or timestamp is None or not verify_key(await request.get_data(), signature, timestamp, app.CLIENT_PUBLIC_KEY):
         return 'Bad request signature', 401
 
     # Automatically respond to pings
-    if request.json and request.json.get('type') == 1:
-        return jsonify({'type': 1})
-    if request.json and request.json.get('type') == 2:
-        return jsonify((await app.check_command(request.json)).to_dict())
-    return 'Dunno mate'
+    if request_json and request_json.get('type') == 1:
+        return {'type': 1}
+    if request_json and request_json.get('type') == 2:
+        return await app.check_command(request.json)
 
 
 if __name__ == '__main__':
