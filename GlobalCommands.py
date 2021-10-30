@@ -144,13 +144,14 @@ class GlobalCommands(Commands):
         return Response(f"Live info for {abbr} will start momentarily")
 
     async def live_info(self, server_id, channel_id):
-        print('Live info')
         bm_id, wa_ip, authcred = self.app.run_sql(f'SELECT SERVERS.BMID, SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}')[0]
         cookies = {'authcred': authcred}
         message = await (await self.app.client.fetch_channel(channel_id)).send('Placeholder for live info')
         while server_id in self.app.info_servers:
+            print('Live info')
             current = await self.app.client.http.request(WARoute('GET', wa_ip, '/current'), cookies=cookies)
             current = WAParser.parse_current(current)
+            print(current)
             players = await self.app.client.http.request(WARoute('GET', wa_ip, '/players'), cookies=cookies)
             players = WAParser.parse_player_list(players)
             content = '------------------------------------------------------\nName: {name}\nPlayers: {players}/64\nMap: {map}\n------------------------------------------------------'
