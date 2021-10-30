@@ -138,9 +138,9 @@ class GlobalCommands(Commands):
         if abbr not in self.app.active_guilds[guild_id]['servers']:
             return Response('Server not in your guilds server list')
         server_id = self.app.active_guilds[guild_id]['servers'][abbr]
+        self.app.info_servers.append(server_id)
         task = self.app.add_async(self.live_chat(server_id, channel_id))
         self.app.chat_tasks.append(task)
-        self.app.info_servers.append(server_id)
         return Response(f"Live info for {abbr} will start momentarily")
 
     async def live_info(self, server_id, channel_id):
@@ -148,10 +148,8 @@ class GlobalCommands(Commands):
         cookies = {'authcred': authcred}
         message = await (await self.app.client.fetch_channel(channel_id)).send('Placeholder for live info')
         while server_id in self.app.info_servers:
-            print('Live info')
             current = await self.app.client.http.request(WARoute('GET', wa_ip, '/current'), cookies=cookies)
             current = WAParser.parse_current(current)
-            print(current)
             players = await self.app.client.http.request(WARoute('GET', wa_ip, '/players'), cookies=cookies)
             players = WAParser.parse_player_list(players)
             content = '------------------------------------------------------\nName: {name}\nPlayers: {players}/64\nMap: {map}\n------------------------------------------------------'
