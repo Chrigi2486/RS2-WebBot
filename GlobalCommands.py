@@ -146,7 +146,7 @@ class GlobalCommands(Commands):
         print('Live info')
         bm_id, wa_ip, authcred = self.app.run_sql(f'SELECT SERVERS.BMID, SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}')[0]
         cookies = {'authcred': authcred}
-        message = await (self.app.client.fetch_channel(channel_id)).send('Placeholder for live info')
+        message = await (await self.app.client.fetch_channel(channel_id)).send('Placeholder for live info')
         while server_id in self.app.info_servers:
             current = await self.app.client.http.request(WARoute('GET', wa_ip, '/current'), cookies=cookies)
             current = WAParser.parse_current(current)
