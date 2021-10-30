@@ -40,7 +40,7 @@ class GuildCommands(Commands):
         if not player:
             return Response(f'{player_name} not found')
         await self.app.client.http.request(WARoute('GET', webadminip, '/ServerAdmin/current/players?action=kick?playerid={player_id}?playerkey={player_key}?__Reason={reason}?NotifyPlayers=0?__IdType=0?__ExpUnit=Never', player_id=player_id, player_key=player_key, reason=reason), cookies={'Authcred': authcred})
-        return Response(f'{player_name} was kicked for {reason}\nPlatform ID: {player["PlatformID"]}')
+        return Response(f'{player_name} was kicked for {reason}\nPlatform ID: {player["platformID"]}')
 
     @Decorators.guild_command(options=[Option("player", "The player to ban"), Option("reason", "Reason to ban the player")])
     async def ban(self, data, guild_id, **kwargs):
