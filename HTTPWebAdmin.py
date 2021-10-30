@@ -61,6 +61,8 @@ class Parser:
         for playerinfo in playerlist.find_all('tr'):
             player = {
                 'name': playerinfo.find_all('input')[2]['value'],
+                'ID': playerinfo.find_all('input')[0]['value'],
+                'key': playerinfo.find_all('input')[1]['value'],
                 'platformID': playerinfo.find_all('td')[5].string,
                 'IP': playerinfo.find_all('td')[3].string,
                 'uniqueID': playerinfo.find_all('td')[4].string

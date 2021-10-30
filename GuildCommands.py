@@ -18,6 +18,8 @@ class GuildCommands(Commands):
 
     @staticmethod
     def find_player(players, name):
+        if players is None:
+            return False
         for player in players:
             if player['name'] == name:
                 return players
@@ -39,6 +41,8 @@ class GuildCommands(Commands):
         player = self.find_player(players, player_name)
         if not player:
             return Response(f'{player_name} not found')
+        player_id = player['ID']
+        player_key = player['key']
         await self.app.client.http.request(WARoute('GET', webadminip, '/ServerAdmin/current/players?action=kick?playerid={player_id}?playerkey={player_key}?__Reason={reason}?NotifyPlayers=0?__IdType=0?__ExpUnit=Never', player_id=player_id, player_key=player_key, reason=reason), cookies={'Authcred': authcred})
         return Response(f'{player_name} was kicked for {reason}\nPlatform ID: {player["platformID"]}')
 
