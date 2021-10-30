@@ -16,6 +16,13 @@ class GuildCommands(Commands):
     def __str__(self):
         return 'Guild Commands'
 
+    @staticmethod
+    def find_player(players, name):
+        for player in players:
+            if player['name'] == name:
+                return players
+        return False
+
     # @Decorators.guild_command(options=[Option("player", "The player to warn"), Option("warning", "The warning which should be given")])
     # def warn(self):
     #     """Warn a player"""
@@ -26,12 +33,14 @@ class GuildCommands(Commands):
         """Kick a player"""
         server = data['options'][0]['name']
         player_name, reason = [option['value'] for option in data['options'][0]['options']]
-        player_db_id, player_id, player_key = player_info.split(',')
         server_id = self.app.active_guilds[guild_id]['servers'][server]
-        player_name, platform_id = self.app.run_sql(f'SELECT PLAYERS.Name, PLAYERS.PlatformID FROM PLAYERS WHERE PLAYERS.ID = {player_db_id}')[0]
         webadminip, authcred = self.app.run_sql(f"SELECT SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}")[0]
+        players = WAParser.parse_player_list(await self.app.client.http.request(WARoute('GET', webadminip, '/current/players'), cookies={'Authcred': authcred}))
+        player = self.find_player(players, player_name)
+        if not player:
+            return Response(f'{player_name} not found')
         await self.app.client.http.request(WARoute('GET', webadminip, '/ServerAdmin/current/players?action=kick?playerid={player_id}?playerkey={player_key}?__Reason={reason}?NotifyPlayers=0?__IdType=0?__ExpUnit=Never', player_id=player_id, player_key=player_key, reason=reason), cookies={'Authcred': authcred})
-        return Response(f'{player_name} was kicked for {reason}\nPlatform ID: {platform_id}')
+        return Response(f'{player_name} was kicked for {reason}\nPlatform ID: {player["PlatformID"]}')
 
     @Decorators.guild_command(options=[Option("player", "The player to ban"), Option("reason", "Reason to ban the player")])
     async def ban(self, data, guild_id, **kwargs):
