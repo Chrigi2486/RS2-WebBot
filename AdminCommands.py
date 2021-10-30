@@ -86,14 +86,14 @@ class AdminCommands(Commands):
         return Response(f'{guild_name} - {guild_ID} has been revoked!')
 
     @Decorators.command('File_Path')
-    async def download(self, data, **kwargs):
+    async def download(self, data, channel_id, **kwargs):
         """sends you the file at the given path"""
         file_path = data['options'][0]['value']
         if not os.path.isfile(file_path):
             return Response('File not found!')
         elif '..' in file_path:
             return Response('Files out of the directory are restricted!')
-        await self.app.client.http.send_files(files=[File(file_path)])
+        await self.app.client.http.send_files(channel_id, files=[File(file_path)])
         print(f'File was downloaded {file_path}')
         return Response(f'{file_path} has been sent')
 

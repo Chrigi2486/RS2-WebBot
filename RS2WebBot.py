@@ -1,5 +1,6 @@
 import os
 import sys
+import asyncio
 import importlib
 import traceback
 from json import load, dump
@@ -62,7 +63,7 @@ class RS2WebBot(Quart):
         return self.client.loop.run_until_complete(command)
 
     def add_async(self, command):
-        return self.client.loop.create_task(command)
+        return asyncio.ensure_future(command, loop=self.client.loop)
 
     def run_sql(self, command, *args, ret_ID=False, one=False):
         database = mysql.connector.connect(user=self.MYSQL_USERNAME, password=self.MYSQL_PASSWORD, host=self.MYSQL_HOST, database=self.MYSQL_DATABASE)
