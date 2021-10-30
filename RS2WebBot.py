@@ -135,19 +135,19 @@ class RS2WebBot(Quart):
         return self.client.http.request(Route('GET', f'/applications/{self.CLIENT_ID}/commands/{command_id}'))
 
     def get_guild_command(self, guild_id, command_id):
-        return self.client.http.request(Route('GET', f'/applications/{self.CLIENT_ID}/guilds/{guild_id}/commands/{command_id}'))
+        return self.client.http.request(Route('GET', f'/applications/{self.CLIENT_ID}/guilds/{guild_id}/commands/{command_id}', guild_id=guild_id))
 
     def create_global_command(self, payload):
         return self.client.http.request(Route('POST', f'/applications/{self.CLIENT_ID}/commands'), json=payload)
 
     def create_guild_command(self, guild_id, payload):
-        return self.client.http.request(Route('POST', f'/applications/{self.CLIENT_ID}/guilds/{guild_id}/commands'), json=payload)
+        return self.client.http.request(Route('POST', f'/applications/{self.CLIENT_ID}/guilds/{guild_id}/commands', guild_id=guild_id), json=payload)
 
     def edit_global_command(self, command_id, payload):
         return self.client.http.request(Route('PATCH', f'/applications/{self.CLIENT_ID}/commands/{command_id}'), json=payload)
 
     def edit_guild_command(self, guild_id, command_id, payload):
-        return self.client.http.request(Route('PATCH', f'/applications/{self.CLIENT_ID}/guilds/{guild_id}/commands/{command_id}'), json=payload)
+        return self.client.http.request(Route('PATCH', f'/applications/{self.CLIENT_ID}/guilds/{guild_id}/commands/{command_id}', guild_id=guild_id), json=payload)
 
 
 app = RS2WebBot(__name__)
