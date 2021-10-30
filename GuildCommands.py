@@ -46,7 +46,7 @@ class GuildCommands(Commands):
             'playerid': player['ID'],
             'playerkey': player['key'],
         }
-        await self.app.client.http.request(WARoute('POST', webadminip, '/ServerAdmin/current/players'), form=form, cookies={'Authcred': authcred})
+        await self.app.client.http.request(WARoute('POST', webadminip, '/ServerAdmin/current/players'), data=form, cookies={'Authcred': authcred})
         return Response(f'{player_name} was kicked for {reason}\nPlatform ID: {player["platformID"]}')
 
     @Decorators.guild_command(options=[Option("player", "The player to ban"), Option("reason", "Reason to ban the player")])
