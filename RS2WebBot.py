@@ -180,9 +180,9 @@ async def handle_command():
     request_json = await request.get_json()
     print('Handle request: ', request_json)
     if request_json and request_json.get('type') == 1:
-        return {'type': 1}
+        return jsonify({'type': 1})
     if request_json and request_json.get('type') == 2:
-        return await app.check_command(request.json)
+        return jsonify((await app.check_command(request.json)).to_dict())
 
 
 if __name__ == '__main__':
