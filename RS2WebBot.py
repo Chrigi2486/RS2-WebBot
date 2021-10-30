@@ -22,14 +22,12 @@ class RS2WebBot(Quart):
     CLIENT_PUBLIC_KEY = os.getenv('CLIENT_PUBLIC_KEY')
     BOT_TOKEN = os.getenv('BOT_TOKEN')
     CLIENT_ID = os.getenv('CLIENT_ID')
-    MYSQL_DATABASE = os.getenv('QOVERY_DATABASE_RS2DATABASE_NAME') if os.getenv('QOVERY_DATABASE_RS2DATABASE_NAME') else 'RS2Database'
-    MYSQL_HOST = os.getenv('QOVERY_DATABASE_RS2DATABASE_HOST') if os.getenv('QOVERY_DATABASE_RS2DATABASE_HOST') else '127.0.0.1'
-    MYSQL_USERNAME = os.getenv('QOVERY_DATABASE_RS2DATABASE_USERNAME') if os.getenv('QOVERY_DATABASE_RS2DATABASE_USERNAME') else 'RS2WebBot'
-    MYSQL_PASSWORD = os.getenv('QOVERY_DATABASE_RS2DATABASE_PASSWORD') if os.getenv('QOVERY_DATABASE_RS2DATABASE_PASSWORD') else os.getenv('MYSQL_PASSWORD')
+    MYSQL_DATABASE = 'RS2Database'
+    MYSQL_HOST = '127.0.0.1'
+    MYSQL_USERNAME = 'RS2WebBot'
+    MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD')
 
     def __init__(self, *args, **kwargs):
-
-        print('Startup')
 
         self.verifier = VerifyKey(bytes.fromhex(self.CLIENT_PUBLIC_KEY))
 
@@ -163,13 +161,10 @@ async def status():
 @app.route('/', methods=['POST'])
 async def handle_command():
     signature = request.headers.get('X-Signature-Ed25519')
-    print(signature)
     timestamp = request.headers.get('X-Signature-Timestamp')
-    print(timestamp)
     if signature is None or timestamp is None:
         return 'No request signature', 401
     request_data = (await request.get_data()).decode('utf-8')
-    print(request_data)
     try:
         app.verifier.verify(f'{timestamp}{request_data}'.encode(), bytes.fromhex(signature))
     except BadSignatureError:
@@ -178,7 +173,6 @@ async def handle_command():
 
     # Automatically respond to pings
     request_json = await request.get_json()
-    print('Handle request: ', request_json)
     if request_json and request_json.get('type') == 1:
         return jsonify({'type': 1})
     if request_json and request_json.get('type') == 2:
