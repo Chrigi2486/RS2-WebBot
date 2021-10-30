@@ -67,6 +67,7 @@ class AdminCommands(Commands):
         if guild_ID not in self.app.active_guilds or not self.app.active_guilds[guild_ID]['validated']:
             return Response('Server must be validated first')
         self.app.active_guilds[guild_ID]['premium'] = True
+        self.app.dump_file(self.app.bot_config['paths']['active_guilds'], self.app.active_guilds)
         guild_name = (await self.app.client.fetch_guild(guild_ID)).name
         return Response(f'{guild_name} - {guild_ID} has been awarded with premium!')
 

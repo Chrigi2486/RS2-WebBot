@@ -73,5 +73,5 @@ class GuildCommands(Commands):
             print(server, webadminip, message, team)
             await self.app.client.http.request(WARoute('GET', webadminip, '/current/chat/data?message={message}?teamsay={team}', message=message, team=team), cookies={'Authcred': authcred})
         else:
-            await self.app.client.http.client.request(WARoute('GET', webadminip, '/current/chat/data?message={message}', message=message), cookies={'Authcred': authcred})
+            await self.app.client.http.request(WARoute('GET', webadminip, '/current/chat/data?message={message}', message=message), cookies={'Authcred': authcred})
         return Response('The message was sent!')
