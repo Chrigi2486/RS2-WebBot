@@ -157,13 +157,11 @@ app = RS2WebBot(__name__)
 
 @app.route('/', methods=['GET'])
 async def status():
-    return 'RS2-Web-Bot up and running'
+    return {"status": 1}
 
 
 @app.route('/', methods=['POST'])
 async def handle_command():
-    request_json = await request.get_json()
-    print('Handle request: ', request_json)
     signature = request.headers.get('X-Signature-Ed25519')
     print(signature)
     timestamp = request.headers.get('X-Signature-Timestamp')
@@ -179,6 +177,8 @@ async def handle_command():
         return 'Bad request signature', 401
 
     # Automatically respond to pings
+    request_json = await request.get_json()
+    print('Handle request: ', request_json)
     if request_json and request_json.get('type') == 1:
         return {'type': 1}
     if request_json and request_json.get('type') == 2:
