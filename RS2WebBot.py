@@ -103,7 +103,6 @@ class RS2WebBot(Quart):
         return Response('This Discord-Server must be validated by -[FGC]- before the bot can be used!')
 
     async def run_command(self, commands, data):
-        print(data)
         command = data['data']['name']
         try:
             return await commands[command](commands, **data)
