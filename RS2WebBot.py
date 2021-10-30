@@ -73,6 +73,7 @@ class RS2WebBot(Quart):
         else:
             result = cursor.fetchall()
         cursor.close()
+        database.commit()
         database.close()
         return result
 
