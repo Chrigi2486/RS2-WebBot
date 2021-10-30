@@ -143,6 +143,7 @@ class GlobalCommands(Commands):
         return Response(f"Live info for {abbr} will start momentarily")
 
     async def live_info(self, server_id, channel_id):
+        print('Live info')
         bm_id, wa_ip, authcred = self.app.run_sql(f'SELECT SERVERS.BMID, SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}')[0]
         cookies = {'authcred': authcred}
         message = await (self.app.client.get_channel(channel_id)).send('Placeholder for live info')
