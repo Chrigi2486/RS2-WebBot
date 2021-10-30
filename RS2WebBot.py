@@ -4,10 +4,11 @@ import importlib
 import traceback
 from json import load, dump
 from discord import Client
+from nacl.signing import VerifyKey
+from nacl.exceptions import BadSignatureError
 from HTTPDiscord import Route
 from DiscordDataTypes import Response
 from quart import Quart, request, jsonify
-from discord_interactions import verify_key
 import mysql.connector
 import GlobalCommands
 import GuildCommands
@@ -29,6 +30,8 @@ class RS2WebBot(Quart):
     def __init__(self, *args, **kwargs):
 
         print('Startup')
+
+        self.verifier = VerifyKey(bytes.fromhex(self.CLIENT_PUBLIC_KEY))
 
         self.client = Client()
 
@@ -165,9 +168,14 @@ async def handle_command():
     print(signature)
     timestamp = request.headers.get('X-Signature-Timestamp')
     print(timestamp)
-    request_data = await request.get_data()
+    if signature is None or timestamp is None:
+        return 'No request signature', 401
+    request_data = (await request.get_data()).decode('utf-8')
     print(request_data)
-    if signature is None or timestamp is None or not verify_key(request_data, signature, timestamp, app.CLIENT_PUBLIC_KEY):
+    try:
+        app.verifier.verify(f'{timestamp}{request_data}'.encode(), bytes.fromhex(signature))
+    except BadSignatureError:
+        print('Bad signature')
         return 'Bad request signature', 401
 
     # Automatically respond to pings
