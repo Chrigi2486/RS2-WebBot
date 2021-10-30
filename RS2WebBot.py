@@ -182,7 +182,7 @@ async def handle_command():
     if request_json and request_json.get('type') == 1:
         return jsonify({'type': 1})
     if request_json and request_json.get('type') == 2:
-        return jsonify((await app.check_command(request.json)).to_dict())
+        return jsonify((await app.check_command(request_json)).to_dict())
 
 
 if __name__ == '__main__':
