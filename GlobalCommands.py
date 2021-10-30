@@ -140,6 +140,7 @@ class GlobalCommands(Commands):
         server_id = self.app.active_guilds[guild_id]['servers'][abbr]
         task = self.app.add_async(self.live_chat(server_id, channel_id))
         self.app.chat_tasks.append(task)
+        self.app.info_servers.append(server_id)
         return Response(f"Live info for {abbr} will start momentarily")
 
     async def live_info(self, server_id, channel_id):
