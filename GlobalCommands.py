@@ -148,7 +148,7 @@ class GlobalCommands(Commands):
         cookies = {'authcred': authcred}
         message = await (await self.app.client.fetch_channel(channel_id)).send('Placeholder for live info')
         print('Out da while')
-        while server_id in self.app.info_servers:
+        while True:
             print('In da while')
             current = await self.app.client.http.request(WARoute('GET', wa_ip, '/current'), cookies=cookies)
             current = WAParser.parse_current(current)
