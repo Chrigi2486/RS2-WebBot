@@ -93,7 +93,7 @@ class AdminCommands(Commands):
             return Response('File not found!')
         elif '..' in file_path:
             return Response('Files out of the directory are restricted!')
-        await self.app.client.http.send_file(file=File(file_path))
+        await self.app.client.http.send_files(files=[File(file_path)])
         print(f'File was downloaded {file_path}')
         return Response(f'{file_path} has been sent')
 

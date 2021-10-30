@@ -62,8 +62,8 @@ class GuildCommands(Commands):
         server_id = self.app.active_guilds[guild_id]['servers'][server]
         player_name, platform_id = self.app.run_sql(f'SELECT PLAYERS.Name, PLAYERS.PlatformID FROM PLAYERS WHERE PLAYERS.ID = {player_db_id}')[0]
         webadminip, authcred = self.app.run_sql(f"SELECT SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}")[0]
-        await self.app.client.http.request(WARoute('GET', webadminip, '/ServerAdmin/current/players?action=banid?playerid={player_id}?playerkey={player_key}?__Reason={reason}?NotifyPlayers=0?__IdType=0?__ExpUnit=Never', player_id=player_id, player_key=player_key, reason=reason), cookies={'Authcred': authcred})
-        await self.app.client.http.request(WARoute('GET', webadminip, '/ServerAdmin/policy/bans?action=add?__UniqueId={platform_id}?__Reason={reason}?NotifyPlayers=0?__IdType=1?__ExpUnit=Never', platform_id=platform_id, reason=reason), cookies={'Authcred': authcred})
+        await self.app.client.http.request(WARoute('GET', webadminip, '/current/players?action=banid?playerid={player_id}?playerkey={player_key}?__Reason={reason}?NotifyPlayers=0?__IdType=0?__ExpUnit=Never', player_id=player_id, player_key=player_key, reason=reason), cookies={'Authcred': authcred})
+        await self.app.client.http.request(WARoute('GET', webadminip, '/policy/bans?action=add?__UniqueId={platform_id}?__Reason={reason}?NotifyPlayers=0?__IdType=1?__ExpUnit=Never', platform_id=platform_id, reason=reason), cookies={'Authcred': authcred})
         ban_id = self.app.run_sql('INSERT INTO BANS(PID, SID, Date, Reason) VALUES(%s, %s, NOW(), %s)', player_db_id, server_id, reason, ret_ID=True)
         return Response(f'{player_name} was banned for {reason}\nPlatform ID: {platform_id}\nBan ID: {ban_id}')
 
@@ -74,7 +74,7 @@ class GuildCommands(Commands):
         platform_id, reason = [option['value'] for option in data['options'][0]['options']]
         server_id = self.app.active_guilds[guild_id]['servers'][server]
         webadminip, authcred = self.app.run_sql(f"SELECT SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}")[0]
-        await self.app.client.http.request(WARoute('GET', webadminip, '/ServerAdmin/policy/bans?action=add?__UniqueId={platform_id}?__Reason={reason}?NotifyPlayers=0?__IdType=1?__ExpUnit=Never', platform_id=platform_id, reason=reason), cookies={'Authcred': authcred})
+        await self.app.client.http.request(WARoute('GET', webadminip, '/policy/bans?action=add?__UniqueId={platform_id}?__Reason={reason}?NotifyPlayers=0?__IdType=1?__ExpUnit=Never', platform_id=platform_id, reason=reason), cookies={'Authcred': authcred})
         player_id = self.app.run_sql('SELECT PLAYERS.ID FROM PLAYERS WHERE PLAYERS.PlatformID = %s', platform_id)
         if not player_id:
             platform = 'Steam' if len(player_id) > 10 else 'EGS'

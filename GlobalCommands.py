@@ -128,8 +128,6 @@ class GlobalCommands(Commands):
         if abbr not in self.app.active_guilds[guild_id]['servers']:
             return Response('Server not in your guilds server list')
         server_id = self.app.active_guilds[guild_id]['servers'][abbr]
-        self.app.bot_config['liveinfo'].append(server_id)
-        self.app.dump_file('config', self.app.bot_config)
         task = self.app.add_async(self.live_info(server_id, channel_id))
         self.app.info_tasks.append(task)
         return Response(f"Live info for {abbr} will start momentarily")
@@ -140,8 +138,6 @@ class GlobalCommands(Commands):
         if abbr not in self.app.active_guilds[guild_id]['servers']:
             return Response('Server not in your guilds server list')
         server_id = self.app.active_guilds[guild_id]['servers'][abbr]
-        self.app.bot_config['livechat'].append(server_id)
-        self.app.dump_file('config', self.app.bot_config)
         task = self.app.add_async(self.live_chat(server_id, channel_id))
         self.app.chat_tasks.append(task)
         return Response(f"Live info for {abbr} will start momentarily")
@@ -150,20 +146,22 @@ class GlobalCommands(Commands):
         bm_id, wa_ip, authcred = self.app.run_sql(f'SELECT SERVERS.BMID, SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}')[0]
         cookies = {'authcred': authcred}
         message = await (self.app.client.get_channel(channel_id)).send('Placeholder for live info')
-        while server_id in self.app.bot_config['liveinfo']:
-            current_response = self.app.client.http.request(WARoute('GET', wa_ip, '/ServerAdmin/current'), cookies=cookies)
-            current = WAParser.parse_current(current_response)
+        while server_id in self.app.info_servers:
+            current = await self.app.client.http.request(WARoute('GET', wa_ip, '/current'), cookies=cookies)
+            current = WAParser.parse_current(current)
+            players = await self.app.client.http.request(WARoute('GET', wa_ip, '/players'), cookies=cookies)
+            players = WAParser.parse_player_list(players)
             content = '------------------------------------------------------\nName: {name}\nPlayers: {players}/64\nMap: {map}\n------------------------------------------------------'
             content = message.format(**current)
             await message.edit(content=content)
-            await asyncio.sleep(60)
+            await asyncio.sleep(30)
 
     async def live_chat(self, server_id, channel_id):
         wa_ip, authcred = self.app.run_sql(f'SELECT SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}')[0]
         channel = self.app.client.get_channel(channel_id)
         cookies = {'authcred': authcred}
-        while server_id in self.app.bot_config['livechat']:
-            chat_response = await self.app.client.http.request(WARoute('GET', wa_ip, '/ServerAdmin/current/chat/data'), cookies=cookies)
+        while server_id in self.app.chat_servers:
+            chat_response = await self.app.client.http.request(WARoute('GET', wa_ip, '/current/chat/data'), cookies=cookies)
             messages = WAParser.parse_chat(chat_response)
             for message in messages:
                 embed = discord.Embed(

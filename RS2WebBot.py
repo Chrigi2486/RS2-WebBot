@@ -35,11 +35,11 @@ class RS2WebBot(Quart):
 
         self.run_async(self.client.login(self.BOT_TOKEN))
 
-        def check_for_file(path, list_=False):
+        def check_for_file(path, base=False):
             if not os.path.isfile(path):
                 os.makedirs(os.path.dirname(path), exist_ok=True)
                 with open(path, 'w') as wfile:
-                    wfile.write(('[]' if list_ else'{}'))
+                    wfile.write((base if base else'{}'))
                 return False
             return True
 
@@ -48,11 +48,12 @@ class RS2WebBot(Quart):
         check_for_file('./config.json')
         self.bot_config = self.load_file('./config.json')
 
-        check_for_file(self.bot_config['paths']['active_guilds'])
-        self.active_guilds = self.load_file(self.bot_config['paths']['active_guilds'])
+        check_for_file(self.bot_config['paths']['active_guilds'], base='{"info_tasks": [], "chat_tasks": []}')
 
         self.info_tasks = []
+        self.info_servers = []
         self.chat_tasks = []
+        self.chat_servers = []
 
         super().__init__(*args, **kwargs)
 
