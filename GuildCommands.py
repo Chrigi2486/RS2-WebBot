@@ -46,6 +46,8 @@ class GuildCommands(Commands):
             'playerid': player['ID'],
             'playerkey': player['key'],
         }
+        print(form, '\n', player)
+        return Response('Test')
         await self.app.client.http.request(WARoute('POST', webadminip, '/ServerAdmin/current/players'), data=form, cookies={'Authcred': authcred})
         return Response(f'{player_name} was kicked for {reason}\nPlatform ID: {player["platformID"]}')
 
