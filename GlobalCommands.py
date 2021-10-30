@@ -147,14 +147,12 @@ class GlobalCommands(Commands):
         bm_id, wa_ip, authcred = self.app.run_sql(f'SELECT SERVERS.BMID, SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}')[0]
         cookies = {'authcred': authcred}
         message = await (await self.app.client.fetch_channel(channel_id)).send('Placeholder for live info')
-        print('Out da while')
         while True:
-            print('In da while')
             await asyncio.sleep(2)
-            print('Async working')
             current = await self.app.client.http.request(WARoute('GET', wa_ip, '/current'), cookies=cookies)
-            print('Current collected')
+            print(current)
             current = WAParser.parse_current(current)
+            print('current parsed')
             print(current)
             players = await self.app.client.http.request(WARoute('GET', wa_ip, '/players'), cookies=cookies)
             players = WAParser.parse_player_list(players)
