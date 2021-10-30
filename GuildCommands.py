@@ -22,7 +22,7 @@ class GuildCommands(Commands):
             return False
         for player in players:
             if player['name'] == name:
-                return players
+                return player
         return False
 
     # @Decorators.guild_command(options=[Option("player", "The player to warn"), Option("warning", "The warning which should be given")])
