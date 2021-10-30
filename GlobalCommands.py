@@ -150,7 +150,10 @@ class GlobalCommands(Commands):
         print('Out da while')
         while True:
             print('In da while')
+            await asyncio.sleep(2)
+            print('Async working')
             current = await self.app.client.http.request(WARoute('GET', wa_ip, '/current'), cookies=cookies)
+            print('Current collected')
             current = WAParser.parse_current(current)
             print(current)
             players = await self.app.client.http.request(WARoute('GET', wa_ip, '/players'), cookies=cookies)
