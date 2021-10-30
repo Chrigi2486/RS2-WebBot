@@ -157,7 +157,7 @@ app = RS2WebBot(__name__)
 
 @app.route('/', methods=['GET'])
 async def status():
-    return {"status": 1}
+    return jsonify({"status": 1})
 
 
 @app.route('/', methods=['POST'])
