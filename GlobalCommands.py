@@ -157,7 +157,7 @@ class GlobalCommands(Commands):
                 players = WAParser.parse_player_list(players)
                 self.app.current_players[server_id] = players
                 if players:
-                    choices = [{'name': player['name'], 'value': index} for index, player in enumerate(players)]
+                    choices = [{'name': player['name'], 'value': str(index)} for index, player in enumerate(players)]
                 else:
                     choices = []
                 command = await self.app.get_guild_command(guild_id, self.app.active_guilds[guild_id]['commands']['kick'])
