@@ -159,7 +159,7 @@ class GlobalCommands(Commands):
                 if players:
                     choices = [{player['name']: index} for index, player in enumerate(players)]
                 else:
-                    choices = None
+                    choices = []
                 command = await self.app.get_guild_command(guild_id, self.app.active_guilds[guild_id]['commands']['kick'])
                 options = command['options']
                 for option in options:
