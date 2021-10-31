@@ -37,7 +37,7 @@ class GuildCommands(Commands):
         player_index, reason = [option['value'] for option in data['options'][0]['options']]
         server_id = self.app.active_guilds[guild_id]['servers'][server]
         webadminip, authcred = self.app.run_sql(f"SELECT SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}")[0]
-        player = self.app.current_players[server][int(player_index)]
+        player = self.app.current_players[server_id][int(player_index)]
         form = {
             'action': 'kick',
             'playerid': player['ID'],
