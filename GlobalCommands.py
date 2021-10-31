@@ -150,12 +150,11 @@ class GlobalCommands(Commands):
         while True:
             await asyncio.sleep(2)
             current = await self.app.client.http.request(WARoute('GET', wa_ip, '/current'), cookies=cookies)
-            print(current)
             current = WAParser.parse_current(current)
-            print('current parsed')
             print(current)
             players = await self.app.client.http.request(WARoute('GET', wa_ip, '/players'), cookies=cookies)
             players = WAParser.parse_player_list(players)
+            print(players)
             content = '------------------------------------------------------\nName: {name}\nPlayers: {players}/64\nMap: {map}\n------------------------------------------------------'
             content = message.format(**current)
             await message.edit(content=content)

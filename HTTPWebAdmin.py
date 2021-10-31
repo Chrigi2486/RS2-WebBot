@@ -33,11 +33,8 @@ class Parser:
 
     @staticmethod
     def parse_current(resp):
-        print('Parse started')
         html = BeautifulSoup(resp, 'html.parser')
-        print('html parsed')
-        name = html.select('#currentGame > dd:nth-child(2)').string
-        print('name parsed')
+        name = html.select('#currentGame > dd:nth-child(2)')[0].contents[0][:-2]
         players = html.select('#currentRules > dd:nth-child(6)')[0].string.split(' ')[0]
         currentmap = html.select('#currentGame > dd:nth-child(7) > code')[0].string
         ranked = html.find(class_='ranked').string.split(' ')[1]
@@ -46,15 +43,12 @@ class Parser:
         scorelist = html.select('#players > tbody')[0]
         scorelist = None if scorelist.find('em') else scorelist
         ranked = not ranked == 'No'
-        print('ranked parsed')
         teams = {'North': {'size': int(north[2].string), 'attacking': (north[3].string == 'Yes'), 'won': int(north[4].string), 'score': int(north[5].string)}, 'South': {'size': int(south[2].string), 'attacking': (south[3].string == 'Yes'), 'won': int(south[4].string), 'score': int(south[5].string)}}
-        print('teams parsed')
 
         def parse_player(player):
             return player.find_all('td')[1].string, {'score': int(player.find_all('td')[3].string), 'kills': int(player.find_all('td')[4].string)}
 
         playerstats = ({} if not scorelist else {parse_player(player)[0]: parse_player(player)[1] for player in scorelist.find_all('tr')})
-        print('players parsed')
         return {'name': name, 'players': players, 'map': currentmap, 'ranked': ranked, 'playerstats': playerstats, 'teams': teams}
 
     @staticmethod
