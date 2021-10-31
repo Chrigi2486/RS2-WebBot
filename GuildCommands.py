@@ -34,13 +34,10 @@ class GuildCommands(Commands):
     async def kick(self, data, guild_id, **kwargs):
         """Kick a player"""
         server = data['options'][0]['name']
-        player_name, reason = [option['value'] for option in data['options'][0]['options']]
+        player_index, reason = [option['value'] for option in data['options'][0]['options']]
         server_id = self.app.active_guilds[guild_id]['servers'][server]
         webadminip, authcred = self.app.run_sql(f"SELECT SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}")[0]
-        players = WAParser.parse_player_list(await self.app.client.http.request(WARoute('GET', webadminip, '/current/players'), cookies={'Authcred': authcred}))
-        player = self.find_player(players, player_name)
-        if not player:
-            return Response(f'{player_name} not found')
+        player = self.app.current_players[server][player_index]
         form = {
             'action': 'kick',
             'playerid': player['ID'],
@@ -51,7 +48,7 @@ class GuildCommands(Commands):
             '__ExpUnit': 'Never'
         }
         await self.app.client.http.request(WARoute('POST', webadminip, '/current/players'), data=form, cookies={'Authcred': authcred})
-        return Response(f'{player_name} was kicked for {reason}\nPlatform ID: {player["platformID"]}')
+        return Response(f'{player["name"]} was kicked for {reason}\nPlatform ID: {player["platformID"]}')
 
     @Decorators.guild_command(options=[Option("player", "The player to ban"), Option("reason", "Reason to ban the player")])
     async def ban(self, data, guild_id, **kwargs):

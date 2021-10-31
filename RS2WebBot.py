@@ -57,6 +57,8 @@ class RS2WebBot(Quart):
         self.chat_tasks = []
         self.chat_servers = []
 
+        self.current_players = {}
+
         super().__init__(*args, **kwargs)
 
     def run_async(self, command):

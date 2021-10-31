@@ -129,7 +129,8 @@ class GlobalCommands(Commands):
         if abbr not in self.app.active_guilds[guild_id]['servers']:
             return Response('Server not in your guilds server list')
         server_id = self.app.active_guilds[guild_id]['servers'][abbr]
-        task = self.app.add_async(self.live_info(server_id, channel_id))
+        self.app.current_players[server_id] = None
+        task = self.app.add_async(self.live_info(server_id, channel_id, guild_id, abbr))
         self.app.info_tasks.append(task)
         return Response(f"Live info for {abbr} will start momentarily")
 
@@ -144,7 +145,7 @@ class GlobalCommands(Commands):
         self.app.chat_tasks.append(task)
         return Response(f"Live info for {abbr} will start momentarily")
 
-    async def live_info(self, server_id, channel_id):
+    async def live_info(self, server_id, channel_id, guild_id, abbr):
         bm_id, wa_ip, authcred = self.app.run_sql(f'SELECT SERVERS.BMID, SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}')[0]
         cookies = {'authcred': authcred}
         message = await (await self.app.client.fetch_channel(channel_id)).send('Placeholder for live info')
@@ -154,6 +155,14 @@ class GlobalCommands(Commands):
                 current = WAParser.parse_current(current)
                 players = await self.app.client.http.request(WARoute('GET', wa_ip, '/current/players'), cookies=cookies)
                 players = WAParser.parse_player_list(players)
+                self.app.current_players[server_id] = players
+                choices = [{player['name']: index} for index, player in enumerate(players)]
+                command = await self.app.get_guild_command(guild_id, self.app.active_guilds[guild_id]['commands']['kick'])
+                options = command['options']
+                for option in options:
+                    if option['name'] == abbr:
+                        option['options'][0]['choices'] = choices
+                await self.app.edit_guild_command(guild_id, self.app.active_guilds[guild_id]['commands']['kick'], options)
                 content = '------------------------------------------------------\nName: {name}\nPlayers: {players}/64\nMap: {map}\n------------------------------------------------------'
                 content = content.format(**current)
                 await message.edit(content=content)
