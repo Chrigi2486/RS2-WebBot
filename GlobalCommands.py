@@ -153,14 +153,10 @@ class GlobalCommands(Commands):
                 current = await self.app.client.http.request(WARoute('GET', wa_ip, '/current'), cookies=cookies)
                 current = WAParser.parse_current(current)
                 players = await self.app.client.http.request(WARoute('GET', wa_ip, '/current/players'), cookies=cookies)
-                print('players')
                 players = WAParser.parse_player_list(players)
-                print(players)
                 content = '------------------------------------------------------\nName: {name}\nPlayers: {players}/64\nMap: {map}\n------------------------------------------------------'
-                content = message.format(**current)
-                print(content)
+                content = content.format(**current)
                 await message.edit(content=content)
-                print('edited')
                 await asyncio.sleep(30)
         except Exception as e:
             print(traceback.format_exc())
