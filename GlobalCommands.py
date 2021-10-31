@@ -3,6 +3,7 @@ import base64
 import hashlib
 import discord
 import asyncio
+import traceback
 from HTTPWebAdmin import Route as WARoute
 from HTTPWebAdmin import Parser as WAParser
 from HTTPBattleMetrics import Route as BMRoute
@@ -147,16 +148,22 @@ class GlobalCommands(Commands):
         bm_id, wa_ip, authcred = self.app.run_sql(f'SELECT SERVERS.BMID, SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}')[0]
         cookies = {'authcred': authcred}
         message = await (await self.app.client.fetch_channel(channel_id)).send('Placeholder for live info')
-        while True:
-            await asyncio.sleep(2)
-            current = await self.app.client.http.request(WARoute('GET', wa_ip, '/current'), cookies=cookies)
-            current = WAParser.parse_current(current)
-            players = await self.app.client.http.request(WARoute('GET', wa_ip, '/current/players'), cookies=cookies)
-            players = WAParser.parse_player_list(players)
-            content = '------------------------------------------------------\nName: {name}\nPlayers: {players}/64\nMap: {map}\n------------------------------------------------------'
-            content = message.format(**current)
-            await message.edit(content=content)
-            await asyncio.sleep(30)
+        try:
+            while True:
+                current = await self.app.client.http.request(WARoute('GET', wa_ip, '/current'), cookies=cookies)
+                current = WAParser.parse_current(current)
+                players = await self.app.client.http.request(WARoute('GET', wa_ip, '/current/players'), cookies=cookies)
+                print('players')
+                players = WAParser.parse_player_list(players)
+                print(players)
+                content = '------------------------------------------------------\nName: {name}\nPlayers: {players}/64\nMap: {map}\n------------------------------------------------------'
+                content = message.format(**current)
+                print(content)
+                await message.edit(content=content)
+                print('edited')
+                await asyncio.sleep(30)
+        except Exception as e:
+            print(traceback.format_exc())
 
     async def live_chat(self, server_id, channel_id):
         wa_ip, authcred = self.app.run_sql(f'SELECT SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}')[0]
