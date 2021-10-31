@@ -156,7 +156,10 @@ class GlobalCommands(Commands):
                 players = await self.app.client.http.request(WARoute('GET', wa_ip, '/current/players'), cookies=cookies)
                 players = WAParser.parse_player_list(players)
                 self.app.current_players[server_id] = players
-                choices = [{player['name']: index} for index, player in enumerate(players)]
+                if players:
+                    choices = [{player['name']: index} for index, player in enumerate(players)]
+                else:
+                    choices = None
                 command = await self.app.get_guild_command(guild_id, self.app.active_guilds[guild_id]['commands']['kick'])
                 options = command['options']
                 for option in options:
