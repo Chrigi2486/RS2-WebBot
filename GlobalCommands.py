@@ -161,10 +161,11 @@ class GlobalCommands(Commands):
                 else:
                     choices = []
                 command = await self.app.get_guild_command(guild_id, self.app.active_guilds[guild_id]['commands']['kick'])
-                for option in command['options']:
+                options = command['options']
+                for option in options:
                     if option['name'] == abbr:
                         option['options'][0]['choices'] = choices
-                await self.app.edit_guild_command(guild_id, self.app.active_guilds[guild_id]['commands']['kick'], command)
+                await self.app.edit_guild_command(guild_id, self.app.active_guilds[guild_id]['commands']['kick'], {'options': options})
                 content = '------------------------------------------------------\nName: {name}\nPlayers: {players}/64\nMap: {map}\n------------------------------------------------------'
                 content = content.format(**current)
                 await message.edit(content=content)
