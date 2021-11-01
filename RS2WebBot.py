@@ -52,10 +52,8 @@ class RS2WebBot(Quart):
         check_for_file(self.bot_config['paths']['active_guilds'])
         self.active_guilds = self.load_file(self.bot_config['paths']['active_guilds'])
 
-        self.info_tasks = []
-        self.info_servers = []
-        self.chat_tasks = []
-        self.chat_servers = []
+        self.info_tasks = {}
+        self.chat_tasks = {}
 
         self.current_players = {}
 

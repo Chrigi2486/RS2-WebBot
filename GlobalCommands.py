@@ -22,6 +22,12 @@ class GlobalCommands(Commands):
     def __str__(self):
         return 'Global Commands'
 
+    @staticmethod
+    def flush_tasks(tasks):
+        for task in tasks:
+            if tasks[task].cancelled():
+                tasks.pop(task)
+
     @Decorators.command()
     async def servers(self, guild_id, **kwargs):
         """lists the servers in your guilds server list"""
@@ -124,26 +130,40 @@ class GlobalCommands(Commands):
         return Response(f'{abbr} has been removed from your server list and our database')
 
     @Decorators.command()
-    async def startinfo(self, data, guild_id, **kwargs):
-        abbr, channel_id = [option['value'] for option in data['options']]
+    async def liveinfo(self, data, guild_id, **kwargs):
+        start, abbr, channel_id = [option['value'] for option in data['options']]
         if abbr not in self.app.active_guilds[guild_id]['servers']:
             return Response('Server not in your guilds server list')
         server_id = self.app.active_guilds[guild_id]['servers'][abbr]
+        if not start:
+            if server_id not in self.app.info_tasks:
+                return Response(f'Live info is currently not running on {abbr}')
+            self.app.info_tasks[server_id].cancel()
+            self.flush_tasks(self.app.info_tasks)
+            return Response(f'Live info has been stopped for {abbr}')
         self.app.current_players[server_id] = None
         task = self.app.add_async(self.live_info(server_id, channel_id, guild_id, abbr))
-        self.app.info_tasks.append(task)
+        self.app.info_tasks[server_id] = task
         return Response(f"Live info for {abbr} will start momentarily")
 
     @Decorators.command()
-    async def startchat(self, data, guild_id, **kwargs):
-        abbr, channel_id = [option['value'] for option in data['options']]
+    async def livechat(self, data, guild_id, **kwargs):
+        start, abbr, channel_id = [option['value'] for option in data['options']]
         if abbr not in self.app.active_guilds[guild_id]['servers']:
             return Response('Server not in your guilds server list')
         server_id = self.app.active_guilds[guild_id]['servers'][abbr]
-        self.app.info_servers.append(server_id)
+        if not start:
+            if server_id not in self.app.chat_tasks:
+                return Response(f'Live chat is currently not running on {abbr}')
+            self.app.chat_tasks[server_id].cancel()
+            self.flush_tasks(self.app.chat_tasks)
+            return Response(f'Live chat has been stopped for {abbr}')
+        if server_id in self.app.chat_tasks:
+            return Response(f'Live chat is already active for {abbr}')
         task = self.app.add_async(self.live_chat(server_id, channel_id))
-        self.app.chat_tasks.append(task)
-        return Response(f"Live info for {abbr} will start momentarily")
+        self.app.chat_tasks[server_id] = task
+        return Response(f"Live chat for {abbr} will start momentarily")
+
 
     async def live_info(self, server_id, channel_id, guild_id, abbr):
         bm_id, wa_ip, authcred = self.app.run_sql(f'SELECT SERVERS.BMID, SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}')[0]
