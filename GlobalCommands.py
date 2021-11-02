@@ -72,6 +72,16 @@ class GlobalCommands(Commands):
         if webadmin_check:
             return webadmin_check
 
+        async def create_session_id():  # needed for chat
+            page = await self.app.client.http.request(WARoute('GET', waIP, ''))
+            session_id = page.cookies.get('sessionid').replace('"', '')
+            token = WAParser.parse_login_page(page)
+            payload = {'token': token, 'password_hash': authhash, 'username': waUsername, 'password': '', 'remember': '-1'}
+            await self.app.client.http.request(WARoute('POST', waIP, '/', data=payload))
+            return session_id
+
+        session_id = await create_session_id()
+
         async def get_bminfo():
             info = await self.app.client.http.request(BMRoute('GET', bmID, ''))
             server_name = info['data']['attributes']['name']
@@ -80,7 +90,7 @@ class GlobalCommands(Commands):
 
         server_name, server_IP = await get_bminfo()
 
-        server_ID = self.app.run_sql("INSERT INTO SERVERS(Name, ServerIP, BMID, WAIP, authcred) VALUES(%s, %s, %s, %s, %s)", server_name, server_IP, bmID, waIP, authcred, ret_ID=True)
+        server_ID = self.app.run_sql("INSERT INTO SERVERS(Name, ServerIP, BMID, WAIP, Authcred, SessionID) VALUES(%s, %s, %s, %s, %s, %s)", server_name, server_IP, bmID, waIP, authcred, session_id, ret_ID=True)
 
         self.app.active_guilds[guild_id]['servers'][abbr] = server_ID
         self.app.dump_file(self.app.bot_config['paths']['active_guilds'], self.app.active_guilds)
@@ -193,10 +203,10 @@ class GlobalCommands(Commands):
             print(traceback.format_exc())
 
     async def live_chat(self, server_id, channel_id):
-        wa_ip, authcred = self.app.run_sql(f'SELECT SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}')[0]
+        wa_ip, authcred, session_id = self.app.run_sql(f'SELECT SERVERS.WAIP, SERVERS.Authcred, SERVERS.SessionID FROM SERVERS WHERE SERVERS.ID = {server_id}')[0]
         channel = await self.app.client.fetch_channel(channel_id)
         print(channel)
-        cookies = {'authcred': authcred}
+        cookies = {'authcred': authcred, 'sessionid': session_id}
         try:
             while True:
                 chat_response = await self.app.client.http.request(WARoute('GET', wa_ip, '/current/chat/data'), cookies=cookies)

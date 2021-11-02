@@ -31,6 +31,11 @@ class Parser:
     def parse_page_title(resp):
         return BeautifulSoup(resp, 'html.parser').html.title.string
 
+    def parse_login_page(resp):
+        html = BeautifulSoup(resp, 'html.parser')
+        token = html.find(attrs={'name': 'token'})['value']
+        return token
+
     @staticmethod
     def parse_current(resp):
         html = BeautifulSoup(resp, 'html.parser')
