@@ -104,7 +104,7 @@ class RS2WebBot(Quart):
             if self.active_guilds[data['guild_id']]['admin'] in data['member']['roles']:
                 return await self.run_command(commands, data)
             return Response('You aren\'t authorised to use this command!')
-        return Response('This Discord-Server must be validated by -[FGC]- before the bot can be used!')
+        return Response('This Discord-Server must be validated by -[HELLO]- before the bot can be used!')
 
     async def run_command(self, commands, data):
         command = data['data']['name']
