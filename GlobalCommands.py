@@ -198,11 +198,11 @@ class GlobalCommands(Commands):
                     cookies['sessionid'] = response_cookies.get('sessionid').value.replace('"', '')
                 messages = WAParser.parse_chat(chat_response)
                 for message in messages:
-                    platform_id = get_player_from_name(self.app.current_players.get(server_id), message['username'])
+                    player = get_player_from_name(self.app.current_players.get(server_id), message['username'])
                     embed = discord.Embed(
                         description=f"{message['team']} **{message['username']}**: {message['content']}",
                         color=message['color'],
-                        footer=f'Platform ID: {platform_id}' if platform_id else None
+                        footer=f"Platform ID: {player['platformID']}" if player else None
                         )
                     await channel.send(embed=embed)
                 await asyncio.sleep(5)
