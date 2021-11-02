@@ -4,6 +4,7 @@ import hashlib
 import discord
 import asyncio
 import traceback
+from aiohttp import ClientSession
 from HTTPWebAdmin import Route as WARoute
 from HTTPWebAdmin import Parser as WAParser
 from HTTPBattleMetrics import Route as BMRoute
@@ -73,9 +74,10 @@ class GlobalCommands(Commands):
             return webadmin_check
 
         async def create_session_id():  # needed for chat
-            page = await self.app.client.http.request(WARoute('GET', waIP, ''))
-            session_id = page.cookies.get('sessionid').replace('"', '')
-            token = WAParser.parse_login_page(page)
+            async with ClientSession() as session:
+                async with session.request(WARoute('GET', waIP, '')) as page:
+                    session_id = page.cookies.get('sessionid').replace('"', '')
+                    token = WAParser.parse_login_page(page)
             payload = {'token': token, 'password_hash': authhash, 'username': waUsername, 'password': '', 'remember': '-1'}
             await self.app.client.http.request(WARoute('POST', waIP, '/', data=payload))
             return session_id
