@@ -1,3 +1,4 @@
+from funcs import *
 from Commands import Commands
 from Decorators import Decorators
 from HTTPWebAdmin import Route as WARoute
@@ -16,15 +17,6 @@ class GuildCommands(Commands):
     def __str__(self):
         return 'Guild Commands'
 
-    @staticmethod
-    def find_player(players, name):
-        if players is None:
-            return False
-        for player in players:
-            if player['name'] == name:
-                return player
-        return False
-
     # @Decorators.guild_command(options=[Option("player", "The player to warn"), Option("warning", "The warning which should be given")])
     # def warn(self):
     #     """Warn a player"""
@@ -41,7 +33,7 @@ class GuildCommands(Commands):
             player = self.app.current_players[server_id][int(player)]
         except (ValueError,  KeyError):
             players = WAParser.parse_player_list(await self.app.client.http.request(WARoute('GET', webadminip, '/current/players'), cookies={'Authcred': authcred}))
-            player = self.find_player(players, player)
+            player = find_player_from_name(players, player)
             if not player:
                 return Response('Player not found')
         form = {

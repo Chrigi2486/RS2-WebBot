@@ -4,6 +4,7 @@ import hashlib
 import discord
 import asyncio
 import traceback
+from funcs import *
 from HTTPWebAdmin import Route as WARoute
 from HTTPWebAdmin import Parser as WAParser
 from HTTPBattleMetrics import Route as BMRoute
@@ -21,16 +22,6 @@ class GlobalCommands(Commands):
 
     def __str__(self):
         return 'Global Commands'
-
-    @staticmethod
-    def flush_tasks(tasks):
-        to_flush = []
-        for task in tasks:
-            if tasks[task].cancelled():
-                to_flush.append(task)
-        for task in to_flush:
-            tasks.pop(task)
-        return len(to_flush)
 
     @Decorators.command()
     async def servers(self, guild_id, **kwargs):
@@ -143,7 +134,7 @@ class GlobalCommands(Commands):
             if server_id not in self.app.info_tasks:
                 return Response(f'Live info is currently not running on {abbr}')
             self.app.info_tasks[server_id].cancel()
-            self.flush_tasks(self.app.info_tasks)
+            flush_tasks(self.app.info_tasks)
             return Response(f'Live info has been stopped for {abbr}')
         self.app.current_players[server_id] = None
         task = self.app.add_async(self.live_info(server_id, channel_id, guild_id, abbr))
@@ -160,7 +151,7 @@ class GlobalCommands(Commands):
             if server_id not in self.app.chat_tasks:
                 return Response(f'Live chat is currently not running on {abbr}')
             self.app.chat_tasks[server_id].cancel()
-            self.flush_tasks(self.app.chat_tasks)
+            flush_tasks(self.app.chat_tasks)
             return Response(f'Live chat has been stopped for {abbr}')
         if server_id in self.app.chat_tasks:
             return Response(f'Live chat is already active for {abbr}')
@@ -207,9 +198,11 @@ class GlobalCommands(Commands):
                     cookies['sessionid'] = response_cookies.get('sessionid').value.replace('"', '')
                 messages = WAParser.parse_chat(chat_response)
                 for message in messages:
+                    platform_id = get_player_from_name(self.app.current_players.get(server_id))
                     embed = discord.Embed(
                         description=f"{message['team']} **{message['username']}**: {message['content']}",
-                        color=message['color']
+                        color=message['color'],
+                        footer=f'Platform ID: {platform_id}' if platform_id else None
                         )
                     await channel.send(embed=embed)
                 await asyncio.sleep(5)

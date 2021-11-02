@@ -2,6 +2,7 @@
 import os
 import asyncio
 from discord import Embed, File
+from funcs import *
 from Commands import Commands
 from Decorators import Decorators
 from DiscordDataTypes import Response
@@ -16,16 +17,6 @@ class AdminCommands(Commands):
 
     def __str__(self):
         return 'Admin Commands'
-
-    @staticmethod
-    def flush_tasks(tasks):
-        to_flush = []
-        for task in tasks:
-            if tasks[task].cancelled():
-                to_flush.append(task)
-        for task in to_flush:
-            tasks.pop(task)
-        return len(to_flush)
 
     # @Decorators.command()
     # async def adminhelp(self, app, message):
@@ -165,4 +156,4 @@ class AdminCommands(Commands):
 
     @Decorators.command()
     async def flushtasks(self, data, **kwargs):
-        return Response(f'{self.flush_tasks(self.app.chat_tasks)} chat tasks flushed.\n{self.flush_tasks(self.app.info_tasks)} info tasks flushed.')
+        return Response(f'{flush_tasks(self.app.chat_tasks)} chat tasks flushed.\n{self.flush_tasks(self.app.info_tasks)} info tasks flushed.')
