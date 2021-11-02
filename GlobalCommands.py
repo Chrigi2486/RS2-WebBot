@@ -203,7 +203,8 @@ class GlobalCommands(Commands):
         try:
             while True:  # get session ID from the request cookies and update cookies
                 chat_response, response_cookies = await self.app.client.http.request(WARoute('GET', wa_ip, '/current/chat/data'), cookies=cookies)
-                cookies['sessionid'] = response_cookies.get('sessionid').value.replace('"', '')
+                if response_cookies.get('sessionid'):
+                    cookies['sessionid'] = response_cookies.get('sessionid').value.replace('"', '')
                 messages = WAParser.parse_chat(chat_response)
                 for message in messages:
                     embed = discord.Embed(
