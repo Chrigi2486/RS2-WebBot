@@ -200,6 +200,7 @@ class GlobalCommands(Commands):
         try:
             while True:
                 chat_response = await self.app.client.http.request(WARoute('GET', wa_ip, '/current/chat/data'), cookies=cookies)
+                print(chat_response)
                 messages = WAParser.parse_chat(chat_response)
                 print(messages)
                 for message in messages:
