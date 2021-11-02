@@ -25,9 +25,13 @@ class GlobalCommands(Commands):
 
     @staticmethod
     def flush_tasks(tasks):
+        flushed = 0
         for task in tasks:
             if tasks[task].cancelled():
                 tasks.pop(task)
+                flushed += 1
+        return flushed
+
 
     @Decorators.command()
     async def servers(self, guild_id, **kwargs):

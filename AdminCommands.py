@@ -17,6 +17,15 @@ class AdminCommands(Commands):
     def __str__(self):
         return 'Admin Commands'
 
+    @staticmethod
+    def flush_tasks(tasks):
+        flushed = 0
+        for task in tasks:
+            if tasks[task].cancelled():
+                tasks.pop(task)
+                flushed += 1
+        return flushed
+
     # @Decorators.command()
     # async def adminhelp(self, app, message):
     #     """displays the admin commands"""
@@ -152,3 +161,7 @@ class AdminCommands(Commands):
     @Decorators.command()
     async def dummy(self, data, **kwargs):
         return Response(str([x[0] for x in os.walk('/mnt')]))
+
+    @Decorators.command()
+    async def flushtasks(self, data, **kwargs):
+        return Response(f'{self.flush_tasks(self.app.chat_tasks)} chat tasks flushed.\n{self.flush_tasks(self.app.info_tasks)} info tasks flushed.')
