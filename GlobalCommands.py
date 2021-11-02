@@ -207,14 +207,11 @@ class GlobalCommands(Commands):
     async def live_chat(self, server_id, channel_id):
         wa_ip, authcred, session_id = self.app.run_sql(f'SELECT SERVERS.WAIP, SERVERS.Authcred, SERVERS.SessionID FROM SERVERS WHERE SERVERS.ID = {server_id}')[0]
         channel = await self.app.client.fetch_channel(channel_id)
-        print(channel)
         cookies = {'authcred': authcred, 'sessionid': session_id}
         try:
             while True:
                 chat_response = await self.app.client.http.request(WARoute('GET', wa_ip, '/current/chat/data'), cookies=cookies)
-                print(chat_response)
                 messages = WAParser.parse_chat(chat_response)
-                print(messages)
                 for message in messages:
                     embed = discord.Embed(
                         description=f"{message['team']} **{message['username']}**: {message['content']}",

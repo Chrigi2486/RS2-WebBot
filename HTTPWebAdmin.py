@@ -78,7 +78,6 @@ class Parser:
     @staticmethod
     def parse_chat(resp):
         chatmessages = BeautifulSoup(resp, 'html.parser').find_all(class_='chatmessage')
-        print(chatmessages)
         messages = []
         for chatmessage in chatmessages:
             message = {
