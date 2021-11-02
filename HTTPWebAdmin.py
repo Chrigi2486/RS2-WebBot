@@ -73,12 +73,14 @@ class Parser:
     def parse_chat(resp):
         chatmessages = BeautifulSoup(resp, 'html.parser').find_all(class_='chatmessage')
         messages = []
+        print('Start parsing', len(chatmessages))
         for chatmessage in chatmessages:
             message = {
-                'name': chatmessage.find(class_='username'),
+                'name': chatmessage.find(class_='username').string,
                 'content': chatmessage.find(class_='message').string,  # TODO: Add @ADMIN
                 'team': chatmessage.find(class_='teamnotice').string if chatmessage.find(class_='teamnotice') else '',
                 'color': int(chatmessage.find(class_='teamcolor')['style'].split(' ')[1].replace(';', '').replace('#', '0x'), 0) if chatmessage.find(class_='teamcolor') else 0x9400D3
             }
             messages.append(message)
+        print(messages)
         return messages
