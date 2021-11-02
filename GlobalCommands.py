@@ -196,13 +196,16 @@ class GlobalCommands(Commands):
         wa_ip, authcred = self.app.run_sql(f'SELECT SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}')[0]
         channel = await self.app.client.fetch_channel(channel_id)
         cookies = {'authcred': authcred}
-        while True:
-            chat_response = await self.app.client.http.request(WARoute('GET', wa_ip, '/current/chat/data'), cookies=cookies)
-            messages = WAParser.parse_chat(chat_response)
-            for message in messages:
-                embed = discord.Embed(
-                    description=f"{message['team']} **{message['username']}**: {message['content']}",
-                    color=message['color']
-                    )
-                await channel.send(embed=embed)
-            await asyncio.sleep(5)
+        try:
+            while True:
+                chat_response = await self.app.client.http.request(WARoute('GET', wa_ip, '/current/chat/data'), cookies=cookies)
+                messages = WAParser.parse_chat(chat_response)
+                for message in messages:
+                    embed = discord.Embed(
+                        description=f"{message['team']} **{message['username']}**: {message['content']}",
+                        color=message['color']
+                        )
+                    await channel.send(embed=embed)
+                await asyncio.sleep(5)
+        except Exception as e:
+            print(traceback.format_exc())
