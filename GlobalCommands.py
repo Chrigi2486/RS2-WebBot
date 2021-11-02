@@ -198,7 +198,7 @@ class GlobalCommands(Commands):
                     cookies['sessionid'] = response_cookies.get('sessionid').value.replace('"', '')
                 messages = WAParser.parse_chat(chat_response)
                 for message in messages:
-                    platform_id = get_player_from_name(self.app.current_players.get(server_id))
+                    platform_id = get_player_from_name(self.app.current_players.get(server_id), message['username'])
                     embed = discord.Embed(
                         description=f"{message['team']} **{message['username']}**: {message['content']}",
                         color=message['color'],
