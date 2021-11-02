@@ -77,7 +77,7 @@ class GlobalCommands(Commands):
             async with ClientSession() as session:
                 async with session.get(WARoute('GET', waIP, '').url) as page:
                     session_id = page.cookies.get('sessionid').value.replace('"', '')
-                    token = WAParser.parse_login_page(page)
+                    token = WAParser.parse_login_page(await page.text())
             payload = {'token': token, 'password_hash': authhash, 'username': waUsername, 'password': '', 'remember': '-1'}
             await self.app.client.http.request(WARoute('POST', waIP, '/', data=payload))
             return session_id
