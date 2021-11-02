@@ -201,9 +201,10 @@ class GlobalCommands(Commands):
                     player = get_player_from_name(self.app.current_players.get(server_id), message['username'])
                     embed = discord.Embed(
                         description=f"{message['team']} **{message['username']}**: {message['content']}",
-                        color=message['color'],
-                        footer=f"Platform ID: {player['platformID']}" if player else None
+                        color=message['color']
                         )
+                    if player:
+                        embed.set_footer(text=f"Platform ID: {player['platformID']}")
                     await channel.send(embed=embed)
                 await asyncio.sleep(5)
         except Exception as e:
