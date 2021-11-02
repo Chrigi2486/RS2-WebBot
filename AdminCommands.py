@@ -19,12 +19,13 @@ class AdminCommands(Commands):
 
     @staticmethod
     def flush_tasks(tasks):
-        flushed = 0
+        to_flush = []
         for task in tasks:
             if tasks[task].cancelled():
-                tasks.pop(task)
-                flushed += 1
-        return flushed
+                to_flush.append(task)
+        for task in to_flush:
+            tasks.pop(task)
+        return len(to_flush)
 
     # @Decorators.command()
     # async def adminhelp(self, app, message):
