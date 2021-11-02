@@ -76,7 +76,8 @@ class GlobalCommands(Commands):
         async def create_session_id():  # needed for chat
             async with ClientSession() as session:
                 async with session.get(WARoute('GET', waIP, '').url) as page:
-                    session_id = page.cookies.get('sessionid').replace('"', '')
+                    print(page.cookies)
+                    session_id = page.cookies['sessionid'].replace('"', '')
                     token = WAParser.parse_login_page(page)
             payload = {'token': token, 'password_hash': authhash, 'username': waUsername, 'password': '', 'remember': '-1'}
             await self.app.client.http.request(WARoute('POST', waIP, '/', data=payload))
