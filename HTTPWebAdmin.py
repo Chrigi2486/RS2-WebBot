@@ -82,7 +82,7 @@ class Parser:
         messages = []
         for chatmessage in chatmessages:
             message = {
-                'name': chatmessage.find(class_='username').string,
+                'username': chatmessage.find(class_='username').string,
                 'content': chatmessage.find(class_='message').string,  # TODO: Add @ADMIN
                 'team': chatmessage.find(class_='teamnotice').string if chatmessage.find(class_='teamnotice') else '',
                 'color': int(chatmessage.find(class_='teamcolor')['style'].split(' ')[1].replace(';', '').replace('#', '0x'), 0) if chatmessage.find(class_='teamcolor') else 0x9400D3
