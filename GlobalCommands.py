@@ -75,7 +75,10 @@ class GlobalCommands(Commands):
 
         server_name, server_IP = await get_bminfo()
 
-        server_ID = self.app.run_sql("INSERT INTO SERVERS(Name, ServerIP, BMID, WAIP, Authcred) VALUES(%s, %s, %s, %s, %s, %s)", server_name, server_IP, bmID, waIP, authcred, ret_ID=True)
+        if server_IP.split(':')[0] != waIP.split(':')[0]:
+            return Response("BattleMetrics ID and Server IP don't match")
+
+        server_ID = self.app.run_sql("INSERT INTO SERVERS(Name, ServerIP, BMID, WAIP, Authcred) VALUES(%s, %s, %s, %s, %s)", server_name, server_IP, bmID, waIP, authcred, ret_ID=True)
 
         self.app.active_guilds[guild_id]['servers'][abbr] = server_ID
         self.app.dump_file(self.app.bot_config['paths']['active_guilds'], self.app.active_guilds)
