@@ -5,6 +5,7 @@ import discord
 import asyncio
 import traceback
 from funcs import *
+from aiohttp.client_exceptions import ClientConnectionError
 from HTTPWebAdmin import Route as WARoute
 from HTTPWebAdmin import Parser as WAParser
 from HTTPBattleMetrics import Route as BMRoute
@@ -168,21 +169,25 @@ class GlobalCommands(Commands):
         message = await (await self.app.client.fetch_channel(channel_id)).send('Placeholder for live info')
         try:
             while True:
-                current = await self.app.client.http.request(WARoute('GET', wa_ip, '/current'), cookies=cookies)
+                try:
+                    current = await self.app.client.http.request(WARoute('GET', wa_ip, '/current'), cookies=cookies)
+                    players = await self.app.client.http.request(WARoute('GET', wa_ip, '/current/players'), cookies=cookies)
+                except ClientConnectionError:
+                    await asyncio.sleep(5)
+                    continue
                 current = WAParser.parse_current(current)
-                players = await self.app.client.http.request(WARoute('GET', wa_ip, '/current/players'), cookies=cookies)
                 players = WAParser.parse_player_list(players)
                 self.app.current_players[server_id] = players
-                if players:
-                    choices = [{'name': player['name'], 'value': str(index)} for index, player in enumerate(players)]
-                else:
-                    choices = []
-                command = await self.app.get_guild_command(guild_id, self.app.active_guilds[guild_id]['commands']['kick'])
-                options = command['options']
-                for option in options:
-                    if option['name'] == abbr:
-                        option['options'][0]['choices'] = choices
-                await self.app.edit_guild_command(guild_id, self.app.active_guilds[guild_id]['commands']['kick'], {'options': options})
+                # if players:  # This only works up to 25 players
+                #     choices = [{'name': player['name'], 'value': str(index)} for index, player in enumerate(players)]
+                # else:
+                #     choices = []
+                # command = await self.app.get_guild_command(guild_id, self.app.active_guilds[guild_id]['commands']['kick'])
+                # options = command['options']
+                # for option in options:
+                #     if option['name'] == abbr:
+                #         option['options'][0]['choices'] = choices
+                # await self.app.edit_guild_command(guild_id, self.app.active_guilds[guild_id]['commands']['kick'], {'options': options})
                 content = '------------------------------------------------------\nName: {name}\nPlayers: {players}/64\nMap: {map}\n------------------------------------------------------'
                 content = content.format(**current)
                 await message.edit(content=content)
@@ -196,7 +201,11 @@ class GlobalCommands(Commands):
         cookies = {'authcred': authcred}
         try:
             while True:  # get session ID from the request cookies and update cookies
-                chat_response, response_cookies = await self.app.client.http.request(WARoute('GET', wa_ip, '/current/chat/data'), cookies=cookies)
+                try:  # This needs a custom discord http file, which returns text, cookies if /chat/data is in the URL
+                    chat_response, response_cookies = await self.app.client.http.request(WARoute('GET', wa_ip, '/current/chat/data'), cookies=cookies)
+                except ClientConnectionError:
+                    await asyncio.sleep(5)
+                    continue
                 if response_cookies.get('sessionid'):
                     cookies['sessionid'] = response_cookies.get('sessionid').value.replace('"', '')
                 messages = WAParser.parse_chat(chat_response)
