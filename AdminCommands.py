@@ -156,4 +156,4 @@ class AdminCommands(Commands):
 
     @Decorators.command()
     async def flushtasks(self, data, **kwargs):
-        return Response(f'{flush_tasks(self.app.chat_tasks)} chat tasks flushed.\n{self.flush_tasks(self.app.info_tasks)} info tasks flushed.')
+        return Response(f'{flush_tasks(self.app.chat_tasks)} chat tasks flushed.\n{flush_tasks(self.app.info_tasks)} info tasks flushed.')
