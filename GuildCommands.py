@@ -33,7 +33,7 @@ class GuildCommands(Commands):
             player = self.app.current_players[server_id][int(player)]
         except (ValueError,  KeyError):
             players = WAParser.parse_player_list(await self.app.client.http.request(WARoute('GET', webadminip, '/current/players'), cookies={'Authcred': authcred}))
-            player = find_player_from_name(players, player)
+            player = get_player_from_name(players, player)
             if not player:
                 return Response('Player not found')
         form = {
