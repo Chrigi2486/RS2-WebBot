@@ -112,7 +112,7 @@ class RS2WebBot(Quart):
             return await commands[command](commands, **data)
         except Exception as e:
             self.logger.error(traceback.format_exc())
-            return Response(f'An Error occured! Please contact a member of the -[FGC]- Team and provide the error message below :)\n**Command:** {command}\n**Error:** {e}')
+            return Response(f'An Error occured! Please contact a member of the -[HELLO]- Team and provide the error message below :)\n**Command:** {command}\n**Error:** {e}')
 
     def update_commands(self, globalc=False, guildc=False, adminc=False):
         if guildc:
