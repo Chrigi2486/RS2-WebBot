@@ -3,8 +3,9 @@ import base64
 import hashlib
 import discord
 import asyncio
+import datetime
 import traceback
-from funcs import *
+from funcs import flush_tasks, get_player_from_name
 from aiohttp.client_exceptions import ClientConnectionError
 from HTTPWebAdmin import Route as WARoute
 from HTTPWebAdmin import Parser as WAParser
@@ -155,6 +156,8 @@ class GlobalCommands(Commands):
             if server_id not in self.app.chat_tasks:
                 return Response(f'Live chat is currently not running on {abbr}')
             self.app.chat_tasks[server_id].cancel()
+            while not self.app.chat_tasks[server_id].cancelled():
+                await asyncio.sleep(0.1)
             flush_tasks(self.app.chat_tasks)
             return Response(f'Live chat has been stopped for {abbr}')
         if server_id in self.app.chat_tasks:
@@ -169,7 +172,7 @@ class GlobalCommands(Commands):
         message = await (await self.app.client.fetch_channel(channel_id)).send('Placeholder for live info')
         try:
             while True:
-                try:
+                try:  # get WebAdmin info and parse it
                     current = await self.app.client.http.request(WARoute('GET', wa_ip, '/current'), cookies=cookies)
                     players = await self.app.client.http.request(WARoute('GET', wa_ip, '/current/players'), cookies=cookies)
                 except ClientConnectionError:
@@ -177,20 +180,40 @@ class GlobalCommands(Commands):
                     continue
                 current = WAParser.parse_current(current)
                 players = WAParser.parse_player_list(players)
-                self.app.current_players[server_id] = players
-                # if players:  # This only works up to 25 players
-                #     choices = [{'name': player['name'], 'value': str(index)} for index, player in enumerate(players)]
-                # else:
-                #     choices = []
-                # command = await self.app.get_guild_command(guild_id, self.app.active_guilds[guild_id]['commands']['kick'])
-                # options = command['options']
-                # for option in options:
-                #     if option['name'] == abbr:
-                #         option['options'][0]['choices'] = choices
-                # await self.app.edit_guild_command(guild_id, self.app.active_guilds[guild_id]['commands']['kick'], {'options': options})
-                content = '------------------------------------------------------\nName: {name}\nPlayers: {players}/64\nMap: {map}\n------------------------------------------------------'
-                content = content.format(**current)
-                await message.edit(content=content)
+                self.app.current_players[server_id] = players  # update coices of kick (and later ban)
+                if players:  # This only works up to 25 players
+                    choices = [{'name': player['name'], 'value': str(index)} for index, player in enumerate(players)][:25]  # shortend to 25
+                else:
+                    choices = []
+                command = await self.app.get_guild_command(guild_id, self.app.active_guilds[guild_id]['commands']['kick'])
+                options = command['options']
+                for option in options:
+                    if option['name'] == abbr:
+                        option['options'][0]['choices'] = choices
+                await self.app.edit_guild_command(guild_id, self.app.active_guilds[guild_id]['commands']['kick'], {'options': options})
+
+                info = await self.app.client.http.request(BMRoute('GET', bm_id, ''))
+                server_name = info['data']['attributes']['name']
+                server_ip = f"{info['data']['attributes']['ip']}:{info['data']['attributes']['port']}"
+                mode = 'Campaign' if info['data']['attributes']['details']['rs2v_bIsCampaignGame'] else 'Territories'
+                rank = info['data']['attributes']['rank']
+                mutator = info['data']['attributes']['details']['rs2v_MutatorsRunning'] or 'None'
+                ranked = 'Ranked' if current['ranked'] else 'Unranked'
+
+                alltime_score = '\n'.join([f'#{i+1}' for i in range(3)])
+                alltime_kills = '\n'.join([f'#{i+1}' for i in range(3)])
+                monthly_score = '\n'.join([f'#{i+1}' for i in range(10)])
+                monthly_kills = '\n'.join([f'#{i+1}' for i in range(10)])
+
+                embed = discord.Embed(title=server_name)
+                embed.add_field(name='Information', value=f"```css\n[IP]:      {server_ip}\n[Rank]:    #{rank}\n[Players]: {current['players']}/64\n[Map]:     {current['map']}\n\n[Status]:  {ranked}\n[Mode]:    {mode}\n[Mutator]: {mutator}\n```")
+                embed.add_field(name='All-Time Leaderboard', value=f'```css\n[Score Leaderboard]\n{alltime_score}\n[Kills Leaderboard]\n{alltime_kills}\n```')
+                embed.add_field(name='\u200B', value='\u200B', inline=False)
+                embed.add_field(name='Score Leaderboard', value=f'```css\n[Monthly Leaderboard]\n{monthly_score}\n```')
+                embed.add_field(name='Kills Leaderboard', value=f'```css\n[Monthly Leaderboard]\n{monthly_kills}\n```')
+                embed.set_footer(text=f'Last updated at {datetime.datetime.today().strftime("%H:%M %d.%m.%y")} (CET)')
+
+                await message.edit(content=None, embed=embed)
                 await asyncio.sleep(30)
         except Exception as e:
             print(traceback.format_exc())

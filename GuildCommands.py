@@ -1,4 +1,4 @@
-from funcs import *
+from funcs import get_player_from_name
 from Commands import Commands
 from Decorators import Decorators
 from HTTPWebAdmin import Route as WARoute
@@ -33,7 +33,7 @@ class GuildCommands(Commands):
             player = self.app.current_players[server_id][int(player)]
         except (ValueError,  KeyError):
             players = WAParser.parse_player_list(await self.app.client.http.request(WARoute('GET', webadminip, '/current/players'), cookies={'Authcred': authcred}))
-            player = get_player_from_name(players, player)
+            player = get_player_from_name(players, player, precise=False)
             if not player:
                 return Response('Player not found')
         form = {

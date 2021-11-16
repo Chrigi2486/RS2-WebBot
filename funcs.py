@@ -9,9 +9,11 @@ def flush_tasks(tasks):
     return len(to_flush)
 
 
-def get_player_from_name(player_list, player_name):
+def get_player_from_name(player_list, player_name, precise=True):
     if player_list is None:
         return None
     for player in player_list:
         if player['name'] == player_name:
+            return player
+        if not precise and player_name in player['name']:
             return player
