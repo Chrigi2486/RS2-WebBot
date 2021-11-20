@@ -176,10 +176,14 @@ async def handle_command():
 
     # Automatically respond to pings
     request_json = await request.get_json()
-    if request_json and request_json.get('type') == 1:
-        return jsonify({'type': 1})
-    if request_json and request_json.get('type') == 2:
-        return jsonify((await app.check_command(request_json)).to_dict())
+    if request_json:
+        if request_json.get('type') == 1:
+            return jsonify({'type': 1})
+        if request_json.get('type') == 2:
+            return jsonify((await app.check_command(request_json)).to_dict())
+        if request_json.get('type') == 4:
+            print(request_json)
+            # return jsonify((await app.auto_complete(request_json)).to_dict())
 
 
 if __name__ == '__main__':

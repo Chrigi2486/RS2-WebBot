@@ -41,14 +41,24 @@ class CommandOption:
         return {'name': self.name, 'description': self.description, 'type': self.otype, 'required': self.required, 'choices': [choice.to_dict() for choice in self.choices]}
 
 
-class Response:
+class Response:  # reengineer Response object
 
     def __init__(self, content: str = None, embed: Embed = None, embeds: list = [], tts: bool = False, allowed_mentions: [] = [], mtype: int = 4):
         self.mtype = mtype
         self.data = {'tts': tts, 'content': content, 'embeds': ([embed.to_dict()] if embed else [embed.to_dict() for embed in embeds]), 'allowed_mentions': allowed_mentions}
 
-    def to_dict(self):
+    def to_dict(self):  # move the to_dicts in self.data to here
         return {'type': self.mtype, 'data': self.data}
+
+
+class AutoCompleteResponse:
+
+    def __init__(self, choices: [CommandOptionChoice], mtype: int = 8):
+        self.mtype = mtype
+        self.choices = choices
+
+    def to_dict(self):
+        return {'type': self.mtype, 'data': {'choices': self.choices.to_dict()}}
 
 
 class Message:

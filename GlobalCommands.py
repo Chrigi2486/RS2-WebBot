@@ -181,16 +181,16 @@ class GlobalCommands(Commands):
                 current = WAParser.parse_current(current)
                 players = WAParser.parse_player_list(players)
                 self.app.current_players[server_id] = players  # update coices of kick (and later ban)
-                if players:  # This only works up to 25 players
-                    choices = [{'name': player['name'], 'value': str(index)} for index, player in enumerate(players)][:25]  # shortend to 25
-                else:
-                    choices = []
-                command = await self.app.get_guild_command(guild_id, self.app.active_guilds[guild_id]['commands']['kick'])
-                options = command['options']
-                for option in options:
-                    if option['name'] == abbr:
-                        option['options'][0]['choices'] = choices
-                await self.app.edit_guild_command(guild_id, self.app.active_guilds[guild_id]['commands']['kick'], {'options': options})
+                # if players:  # This only works up to 25 players
+                #     choices = [{'name': player['name'], 'value': str(index)} for index, player in enumerate(players)][:25]  # shortend to 25
+                # else:
+                #     choices = []
+                # command = await self.app.get_guild_command(guild_id, self.app.active_guilds[guild_id]['commands']['kick'])
+                # options = command['options']
+                # for option in options:
+                #     if option['name'] == abbr:
+                #         option['options'][0]['choices'] = choices
+                # await self.app.edit_guild_command(guild_id, self.app.active_guilds[guild_id]['commands']['kick'], {'options': options})
 
                 info = await self.app.client.http.request(BMRoute('GET', bm_id, ''))
                 server_name = info['data']['attributes']['name']
@@ -211,7 +211,7 @@ class GlobalCommands(Commands):
                 embed.add_field(name='\u200B', value='\u200B', inline=False)
                 embed.add_field(name='Score Leaderboard', value=f'```css\n[Monthly Leaderboard]\n{monthly_score}\n```')
                 embed.add_field(name='Kills Leaderboard', value=f'```css\n[Monthly Leaderboard]\n{monthly_kills}\n```')
-                embed.set_footer(text=f'Last updated at {datetime.datetime.today().strftime("%H:%M %d.%m.%y")} (CET)')
+                embed.set_footer(text=f'Last updated at {datetime.datetime.today().strftime("%H:%M %d.%m.%y")} (UTC)')
 
                 await message.edit(content=None, embed=embed)
                 await asyncio.sleep(30)
