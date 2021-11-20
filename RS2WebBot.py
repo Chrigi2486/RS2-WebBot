@@ -8,7 +8,7 @@ from discord import Client
 from nacl.signing import VerifyKey
 from nacl.exceptions import BadSignatureError
 from HTTPDiscord import Route
-from DiscordDataTypes import Response
+from DiscordDataTypes import Response, AutoCompleteResponse, CommandOptionChoice
 from quart import Quart, request, jsonify
 import mysql.connector
 import GlobalCommands
@@ -126,6 +126,24 @@ class RS2WebBot(Quart):
             self.admin_commands = AdminCommands.AdminCommands(self)
         return globalc, guildc, adminc
 
+    def auto_complete(self, data):
+
+        for option in data['data']['options']:
+            for aoption in option['options']:
+                if aoption.get('focused'):
+                    abbr = option['name']
+                    value = aoption['value']
+                    break
+
+        choices = []
+        playerlist = self.currentplayers.get(self.active_guilds[data['guild_id']][abbr])
+        if playerlist:
+            for player in playerlist:
+                if player['name'].lower.startswith(value):
+                    choices.append(CommandOptionChoice(player['name'], player['name']))
+
+        return AutoCompleteResponse(choices)
+
     def load_file(self, path):
         with open(path, 'r') as file:
             return load(file)
@@ -182,8 +200,7 @@ async def handle_command():
         if request_json.get('type') == 2:
             return jsonify((await app.check_command(request_json)).to_dict())
         if request_json.get('type') == 4:
-            print(request_json)
-            # return jsonify((await app.auto_complete(request_json)).to_dict())
+            return jsonify((app.auto_complete(request_json)).to_dict())
 
 
 if __name__ == '__main__':

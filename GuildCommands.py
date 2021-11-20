@@ -26,14 +26,19 @@ class GuildCommands(Commands):
     async def kick(self, data, guild_id, **kwargs):
         """Kick a player"""
         server = data['options'][0]['name']
-        player, reason = [option['value'] for option in data['options'][0]['options']]
+        player_name, reason = [option['value'] for option in data['options'][0]['options']]
         server_id = self.app.active_guilds[guild_id]['servers'][server]
         webadminip, authcred = self.app.run_sql(f"SELECT SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}")[0]
-        try:
-            player = self.app.current_players[server_id][int(player)]
-        except (ValueError,  KeyError):
+        current_players = self.app.current_players.get(server_id)
+        player = None
+        if current_players:
+            for cplayer in current_players:
+                if cplayer['name'] == player_name:
+                    player = cplayer
+                    break
+        if current_players is None or player is None:
             players = WAParser.parse_player_list(await self.app.client.http.request(WARoute('GET', webadminip, '/current/players'), cookies={'Authcred': authcred}))
-            player = get_player_from_name(players, player, precise=False)
+            player = get_player_from_name(players, player_name, precise=False)
             if not player:
                 return Response('Player not found')
         form = {
