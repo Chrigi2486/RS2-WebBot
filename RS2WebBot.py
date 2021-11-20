@@ -136,7 +136,7 @@ class RS2WebBot(Quart):
                     break
 
         choices = []
-        playerlist = self.current_players.get(self.active_guilds[data['guild_id']][abbr])
+        playerlist = self.current_players.get(self.active_guilds[data['guild_id']]['servers'][abbr])
         if playerlist:
             for player in playerlist:
                 if player['name'].lower.startswith(value):
