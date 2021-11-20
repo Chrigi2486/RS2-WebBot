@@ -139,7 +139,7 @@ class RS2WebBot(Quart):
         playerlist = self.current_players.get(self.active_guilds[data['guild_id']]['servers'][abbr])
         if playerlist:
             for player in playerlist:
-                if player['name'].lower.startswith(value):
+                if player['name'].lower().startswith(value.lower()):
                     choices.append(CommandOptionChoice(player['name'], player['name']))
 
         return AutoCompleteResponse(choices)
