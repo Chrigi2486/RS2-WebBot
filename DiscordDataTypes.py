@@ -58,7 +58,7 @@ class AutoCompleteResponse:
         self.choices = choices
 
     def to_dict(self):
-        return {'type': self.mtype, 'data': {'choices': self.choices.to_dict()}}
+        return {'type': self.mtype, 'data': {'choices': [choice.to_dict() for choice in self.choices]}}
 
 
 class Message:
