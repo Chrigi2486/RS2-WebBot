@@ -1,5 +1,5 @@
 
-def flush_tasks(tasks):
+def flush_tasks(tasks):  # Removes tasks from the tasks list if they have been cancelled (like live info)
     to_flush = []
     for task in tasks:
         if tasks[task].cancelled():
@@ -9,7 +9,7 @@ def flush_tasks(tasks):
     return len(to_flush)
 
 
-def get_player_from_name(player_list, player_name, precise=True):
+def get_player_from_name(player_list, player_name, precise=True):  # Finds the player data by player name
     if player_list is None:
         return None
     for player in player_list:
