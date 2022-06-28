@@ -22,7 +22,7 @@ class GuildCommands(Commands):
     #     """Warn a player"""
     #     pass
 
-    @Decorators.guild_command(options=[Option("player", "The player to kick"), Option("reason", "Reason to kick the player")])
+    @Decorators.guild_command(options=[Option("player", "The player to kick", autocomplete=True), Option("reason", "Reason to kick the player")])
     async def kick(self, data, guild_id, **kwargs):
         """Kick a player"""
         server = data['options'][0]['name']
@@ -53,14 +53,25 @@ class GuildCommands(Commands):
         await self.app.client.http.request(WARoute('POST', webadminip, '/current/players'), data=form, cookies={'Authcred': authcred})
         return Response(f'{player["name"]} was kicked for {reason}\nPlatform ID: {player["platformID"]}')
 
-    @Decorators.guild_command(options=[Option("player", "The player to ban"), Option("reason", "Reason to ban the player")])
+    @Decorators.guild_command(options=[Option("player", "The player to ban", autocomplete=True), Option("reason", "Reason to ban the player")])
     async def ban(self, data, guild_id, **kwargs):
         """Ban a player"""
         server = data['options'][0]['name']
-        player_info, reason = [option['value'] for option in data['options'][0]['options']]
-        player_db_id, player_id, player_key = player_info.split(',')
+        player_name, reason = [option['value'] for option in data['options'][0]['options']]
         server_id = self.app.active_guilds[guild_id]['servers'][server]
-        player_name, platform_id = self.app.run_sql(f'SELECT PLAYERS.Name, PLAYERS.PlatformID FROM PLAYERS WHERE PLAYERS.ID = {player_db_id}')[0]
+        current_players = self.app.current_players.get(server_id)
+        player = None
+        if current_players:
+            for cplayer in current_players:
+                if cplayer['name'] == player_name:
+                    player = cplayer
+                    break
+        if current_players is None or player is None:
+            players = WAParser.parse_player_list(await self.app.client.http.request(WARoute('GET', webadminip, '/current/players'), cookies={'Authcred': authcred}))
+            player = get_player_from_name(players, player_name, precise=False)
+            if not player:
+                return Response('Player not found')
+
         webadminip, authcred = self.app.run_sql(f"SELECT SERVERS.WAIP, SERVERS.Authcred FROM SERVERS WHERE SERVERS.ID = {server_id}")[0]
         await self.app.client.http.request(WARoute('GET', webadminip, '/current/players?action=banid?playerid={player_id}?playerkey={player_key}?__Reason={reason}?NotifyPlayers=0?__IdType=0?__ExpUnit=Never', player_id=player_id, player_key=player_key, reason=reason), cookies={'Authcred': authcred})
         await self.app.client.http.request(WARoute('GET', webadminip, '/policy/bans?action=add?__UniqueId={platform_id}?__Reason={reason}?NotifyPlayers=0?__IdType=1?__ExpUnit=Never', platform_id=platform_id, reason=reason), cookies={'Authcred': authcred})
